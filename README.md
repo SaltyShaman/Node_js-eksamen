@@ -7,6 +7,7 @@ Student: Kristoffer Søholm Gillesberg
 
 express
 sqlite3
+sqlite
 bcrypt
 helmet
 dotenv

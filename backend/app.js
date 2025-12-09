@@ -10,6 +10,8 @@ import { generalLimiter, authLimiter } from "./config/rateLimiters.js";
 
 //Middleware imports
 import helmet from "helmet";
+import protectedRouter from "./routers/protectedRouter.js";
+
 
 app.use(express.json());
 
@@ -26,7 +28,11 @@ app.use(cors({
 app.use(sessionConfig);
 app.use(helmet());
 app.use(generalLimiter);
+app.use(protectedRouter);
+app.use("/auth", authRouter);
 
+// Routers
+import authRouter from "./routers/authRouter.js";
 
 // Server
 const PORT = process.env.PORT || 8080;
