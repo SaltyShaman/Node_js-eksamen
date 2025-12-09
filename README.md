@@ -44,3 +44,11 @@ Eksamen/ (root folder)
 ## How to setup a local session secret:
 
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+
+## Roles in the application
+1) ADMIN
+2) TEAM_LEADER
+3) STAFF
+
+Access is defined in the middleware file requireRole.js and in the routers protectedRouters.js file. 
