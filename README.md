@@ -37,6 +37,9 @@ Eksamen/ (root folder)
 │ ├─ createDatabase.js
 │ └─ middleware/
 │ ├─ requireLogin.js
+│ ├─ requireRole.js
+│ └─ middleware/
+│ ├─ socketHandler.js
 ├─ frontend/  (to-do)
 
 ```
