@@ -14,3 +14,29 @@ dotenv
 cors
 sockets.io
 express-sessions
+
+## Project structure:
+
+```
+
+Eksamen/ (root folder)
+├─ backend/
+│ ├─ .env
+│ ├─ app.js
+│ ├─ users.db (in gitignore)
+│ └─ routers/
+│ ├─ authRouter.js
+│ └─ middlewareRouter.js
+│ └─ config/
+│ ├─ rateLimiters.js
+│ ├─ sessionConfig.js
+│ └─ controllers/
+│ ├─ authController.js
+│ └─ database/
+│ ├─ connection.js
+│ ├─ createDatabase.js
+│ └─ middleware/
+│ ├─ requireLogin.js
+├─ frontend/  (to-do)
+
+```
