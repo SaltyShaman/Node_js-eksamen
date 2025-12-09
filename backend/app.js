@@ -7,6 +7,18 @@ const app = express();
 import sessionConfig from "./config/sessionConfig.js";
 import { generalLimiter, authLimiter } from "./config/rateLimiters.js";
 
+//Sockets
+import { Server } from "socket.io";
+import http from "http";
+import socketHandler from "./sockets/socketHandler.js";
+
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: { origin: 'http://localhost:5173', credentials: true }
+});
+
+socketHandler(io);
 
 //Middleware imports
 import helmet from "helmet";
@@ -23,6 +35,8 @@ app.use(cors({
     credentials: true
 }));
 
+// Routers
+import authRouter from "./routers/authRouter.js";
 
 // Middleware app use
 app.use(sessionConfig);
@@ -31,8 +45,7 @@ app.use(generalLimiter);
 app.use(protectedRouter);
 app.use("/auth", authRouter);
 
-// Routers
-import authRouter from "./routers/authRouter.js";
+
 
 // Server
 const PORT = process.env.PORT || 8080;
