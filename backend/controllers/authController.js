@@ -21,7 +21,14 @@ export async function login(req, res) {
 
 // LOGOUT
 export function logout(req, res) {
-    req.session.destroy(() => {
+
+    if (!req.session.user) {
+        return res.status(401).json({error: "You are not logged in"})
+    }
+
+
+    req.session.destroy(err => {
+        if (err) return res.status(500).json({ error: "Could not log out" });
         res.json({ message: "Logged out" });
     });
 }
