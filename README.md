@@ -40,3 +40,7 @@ Eksamen/ (root folder)
 ├─ frontend/  (to-do)
 
 ```
+
+## How to setup a local session secret:
+
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
