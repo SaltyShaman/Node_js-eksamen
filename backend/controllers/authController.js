@@ -1,22 +1,19 @@
 import db from "../database/connection.js";
 import bcrypt from "bcrypt";
 
-// LOGIN
 export async function login(req, res) {
-    const { usernameOrEmail, password } = req.body;
+    const { username, password } = req.body; // <--- brug username i stedet for usernameOrEmail
 
-    // Find user by username OR email
     const user = await db.get(
-        "SELECT * FROM users WHERE username = ? OR email = ?",
-        [usernameOrEmail, usernameOrEmail]
+        "SELECT * FROM users WHERE username = ?",
+        [username]
     );
 
-    if (!user) return res.status(401).json({ error: "Invalid username/email or password" });
+    if (!user) return res.status(401).json({ error: "Invalid username or password" });
 
     const valid = await bcrypt.compare(password, user.password_hash);
-    if (!valid) return res.status(401).json({ error: "Invalid username/email or password" });
+    if (!valid) return res.status(401).json({ error: "Invalid username or password" });
 
-    // Save session
     req.session.user = { id: user.id, username: user.username, role: user.role };
 
     res.json({ message: "Logged in", user: req.session.user });
