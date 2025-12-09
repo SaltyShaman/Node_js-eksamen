@@ -4,7 +4,9 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "deleteDatabase": "node ./database/createDatabase.js delete",
+    "updateDatabase": "node ./database/createDatabase.js",
+    "resetDatabase": "npm run deleteDatabase && npm run updateDatabase"
   },
   "keywords": [],
   "author": "",
