@@ -48,8 +48,9 @@ app.use(protectedRouter);
 app.use("/auth", authRouter);
 
 //Endpoint uses
-app.use("/api", projectRouter);
+app.use("/api/projects", projectRouter);
 app.use("/api/tasks", taskRouter);
+
 // Server
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
