@@ -1,33 +1,12 @@
 <script>
-    import { loadSession, loadingSession, logout, user } from "$lib/stores/sessionStore.js";
+    import { loadSession, loadingSession } from "$lib/stores/sessionStore.js";
+    import Header from "$lib/Header.svelte";
+    import Footer from "$lib/Footer.svelte";
 
-    loadSession(); // loader session ved app load
-
-    let menuOpen = false;
-
-    function toggleMenu() {
-        menuOpen = !menuOpen;
-    }
-
-    async function handleLogout() {
-        await logout();
-        // Redirect til login
-        window.location.href = "/login";
-    }
+    loadSession(); // load upon app start
 </script>
 
-<header>
-    <nav class="navbar">
-        <div class="logo">Eksamen Project</div>
-        <button class="menu-button" on:click={toggleMenu}>☰</button>
-        <ul class:open={menuOpen}>
-            {#if $user}
-                <li>{$user.username} ({$user.role})</li>
-                <li><button on:click={handleLogout}>Logout</button></li>
-            {/if}
-        </ul>
-    </nav>
-</header>
+<Header />
 
 <main>
     {#if $loadingSession}
@@ -37,27 +16,11 @@
     {/if}
 </main>
 
-<footer>
-    <p>&copy; 2025 Kristoffer Gillesberg</p>
-</footer>
+<Footer />
 
 <style>
-    header, footer {
-        background: #222;
-        color: white;
-        padding: 1rem;
-        text-align: center;
-    }
     main {
         padding: 2rem;
         min-height: 70vh;
-    }
-    .navbar ul {
-        list-style: none;
-        display: flex;
-        gap: 1rem;
-    }
-    .navbar ul.open {
-        display: block;
     }
 </style>

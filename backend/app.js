@@ -37,6 +37,7 @@ app.use(cors({
 
 // Routers
 import authRouter from "./routers/authRouter.js";
+import projectRouter from "./routers/projectRouter.js"
 
 // Middleware app use
 app.use(sessionConfig);
@@ -44,7 +45,7 @@ app.use(helmet());
 app.use(generalLimiter);
 app.use(protectedRouter);
 app.use("/auth", authRouter);
-
+app.use("/api", projectRouter);
 
 
 // Server
