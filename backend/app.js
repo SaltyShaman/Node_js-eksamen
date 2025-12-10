@@ -35,9 +35,10 @@ app.use(cors({
     credentials: true
 }));
 
-// Routers
+// Routers imports
 import authRouter from "./routers/authRouter.js";
 import projectRouter from "./routers/projectRouter.js"
+import taskRouter from "./routers/taskRouter.js";
 
 // Middleware app use
 app.use(sessionConfig);
@@ -45,9 +46,10 @@ app.use(helmet());
 app.use(generalLimiter);
 app.use(protectedRouter);
 app.use("/auth", authRouter);
+
+//Endpoint uses
 app.use("/api", projectRouter);
-
-
+app.use("/api/tasks", taskRouter);
 // Server
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
