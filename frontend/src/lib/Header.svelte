@@ -23,7 +23,7 @@
                 <li><a href="/dashboard">Dashboard</a></li>
                 <li><a href="/projects">Projekter</a></li>
                 {#if $user.role === 'ADMIN' || $user.role === 'TEAM_LEADER'}
-                    <li><a href="/projects/create">Opret Projekt</a></li>
+                    <li><a href="/projects/create">Opret Projekter</a></li>
                     <li><a href="/tasks">Opret/Administrer Tasks</a></li>
                 {/if}
                 
