@@ -27,7 +27,43 @@ router.get("/", requireLogin, async (req, res) => {
     }
 });
 
-//find single project
+router.get("/search", requireLogin, async (req, res) => {
+    const query = req.query.query || "";
+
+    try {
+        // Find projekter baseret på projekt- eller task-navn
+        const projects = await db.all(
+            `
+            SELECT DISTINCT p.*
+            FROM projects p
+            LEFT JOIN tasks t ON t.project_id = p.id
+            WHERE p.name LIKE ? OR t.title LIKE ?
+            `,
+            [`%${query}%`, `%${query}%`]
+        );
+
+        // Hent tasks for hvert fundet projekt
+        for (let project of projects) {
+            const tasks = await db.all(
+                `
+                SELECT t.id, t.title, t.description, t.status, u.username AS assigned_to
+                FROM tasks t
+                LEFT JOIN users u ON t.assigned_to = u.id
+                WHERE t.project_id = ?
+                `,
+                [project.id]
+            );
+            project.tasks = tasks;
+        }
+
+        res.json({ projects });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Fejl ved søgning" });
+    }
+});
+
+//find single project by id
 router.get("/:id", requireLogin, async (req, res) => {
   try {
     const project = await db.get("SELECT * FROM projects WHERE id = ?", [req.params.id]);

@@ -6,7 +6,10 @@
   let projects = [];
   let loading = true;
   let error = "";
+  let searchQuery = "";
+  let searching = false;
 
+  //fetch all projects
   async function fetchProjects() {
     loading = true;
     try {
@@ -37,12 +40,41 @@
     }
   }
 
+    async function searchProjects() {
+        if (searchQuery.trim() === "") {
+            loadAllProjects();
+            return;
+        }
+
+        searching = true;
+        try {
+            const res = await api(`/api/projects/search?query=${encodeURIComponent(searchQuery)}`);
+            projects = res.projects;
+        } finally {
+            searching = false;
+        }
+    }
+
+
   onMount(() => {
     fetchProjects();
   });
 </script>
 
 <h1>Alle Projekter</h1>
+
+<input 
+    type="text" 
+    placeholder="Søg efter projekt eller task…" 
+    bind:value={searchQuery}
+    on:input={searchProjects}
+    style="padding:0.5rem; width:100%; max-width:400px; margin: 1rem 0;"
+/>
+
+{#if searching}
+    <p>Søger...</p>
+{/if}
+
 
 {#if loading}
   <p>Loading...</p>
