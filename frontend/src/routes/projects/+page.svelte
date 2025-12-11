@@ -2,12 +2,14 @@
   import { onMount } from "svelte";
   import { api } from "$lib/api.js";
   import { goto } from "$app/navigation";
+  import TaskForm from "$lib/components/TaskForm.svelte";
 
   let projects = [];
   let loading = true;
   let error = "";
   let searchQuery = "";
   let searching = false;
+  let taskError = "";
 
   //fetch all projects
   async function fetchProjects() {
@@ -40,21 +42,48 @@
     }
   }
 
-    async function searchProjects() {
-        if (searchQuery.trim() === "") {
-            loadAllProjects();
-            return;
-        }
-
-        searching = true;
-        try {
-            const res = await api(`/api/projects/search?query=${encodeURIComponent(searchQuery)}`);
-            projects = res.projects;
-        } finally {
-            searching = false;
-        }
+  async function searchProjects() {
+    if (searchQuery.trim() === "") {
+      fetchProjects();
+      return;
     }
 
+    searching = true;
+    try {
+      const res = await api(`/api/projects/search?query=${encodeURIComponent(searchQuery)}`);
+      projects = res.projects;
+    } finally {
+      searching = false;
+    }
+  }
+
+  function handleTaskCreated(projectId, newTask) {
+    const project = projects.find(p => p.id === projectId);
+    if (project) {
+      project.tasks = [...project.tasks, newTask];
+    }
+  }
+
+  function handleTaskUpdated(projectId, updatedTask) {
+    const project = projects.find(p => p.id === projectId);
+    if (project) {
+      project.tasks = project.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
+    }
+  }
+
+  async function handleTaskDeleted(projectId, taskId) {
+    if (!confirm("Er du sikker på, at du vil slette denne task?")) return;
+    try {
+      await api(`/api/tasks/${taskId}`, { method: "DELETE" });
+      const project = projects.find(p => p.id === projectId);
+      if (project) {
+        project.tasks = project.tasks.filter(t => t.id !== taskId);
+      }
+    } catch (err) {
+      console.error(err);
+      taskError = "Kunne ikke slette task";
+    }
+  }
 
   onMount(() => {
     fetchProjects();
@@ -64,17 +93,16 @@
 <h1>Alle Projekter</h1>
 
 <input 
-    type="text" 
-    placeholder="Søg efter projekt eller task…" 
-    bind:value={searchQuery}
-    on:input={searchProjects}
-    style="padding:0.5rem; width:100%; max-width:400px; margin: 1rem 0;"
+  type="text" 
+  placeholder="Søg efter projekt eller task…" 
+  bind:value={searchQuery}
+  on:input={searchProjects}
+  style="padding:0.5rem; width:100%; max-width:400px; margin: 1rem 0;"
 />
 
 {#if searching}
-    <p>Søger...</p>
+  <p>Søger...</p>
 {/if}
-
 
 {#if loading}
   <p>Loading...</p>
@@ -88,18 +116,31 @@
       <h2>{project.name}</h2>
       <p>{project.description}</p>
 
-      <button on:click={() => handleEdit(project.id)}>Rediger</button>
-      <button on:click={() => handleDelete(project.id)}>Slet</button>
+      <button on:click={() => handleEdit(project.id)}>Rediger Projekt</button>
+      <button on:click={() => handleDelete(project.id)}>Slet Projekt</button>
 
       <h3>Tasks:</h3>
+      {#if taskError}
+        <p style="color:red">{taskError}</p>
+      {/if}
+
       <ul>
-        {#each project.tasks as task}
+        {#each project.tasks as task (task.id)}
           <li>
-            {task.title} - {task.status} 
+            <strong>{task.title}</strong> - {task.status} 
             {#if task.assigned_to} (Assigned to: {task.assigned_to}) {/if}
+            <div style="margin-top:0.3rem;">
+              <TaskForm {project} task={task} 
+                        on:updated={e => handleTaskUpdated(project.id, e.detail)} />
+              <button on:click={() => handleTaskDeleted(project.id, task.id)} 
+                      style="margin-top:0.2rem;">Slet Task</button>
+            </div>
           </li>
         {/each}
       </ul>
+
+      <h4>Opret ny Task</h4>
+      <TaskForm {project} on:created={e => handleTaskCreated(project.id, e.detail)} />
     </div>
   {/each}
 {/if}
