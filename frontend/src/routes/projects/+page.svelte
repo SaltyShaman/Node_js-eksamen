@@ -87,6 +87,10 @@
     <div style="border:1px solid #ccc; padding:1rem; margin-bottom:1rem;">
       <h2>{project.name}</h2>
       <p>{project.description}</p>
+
+      <button on:click={() => handleEdit(project.id)}>Rediger</button>
+      <button on:click={() => handleDelete(project.id)}>Slet</button>
+
       <h3>Tasks:</h3>
       <ul>
         {#each project.tasks as task}
@@ -96,8 +100,6 @@
           </li>
         {/each}
       </ul>
-      <button on:click={() => handleEdit(project.id)}>Rediger</button>
-      <button on:click={() => handleDelete(project.id)}>Slet</button>
     </div>
   {/each}
 {/if}
