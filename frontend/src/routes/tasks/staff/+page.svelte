@@ -26,7 +26,7 @@
     }
   }
 
-  // Filter staffTasks baseret på søgning
+  // Search filtering
   $: if (searchQuery.trim() === "") {
     filteredStaffTasks = staffTasks;
   } else {

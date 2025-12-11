@@ -131,6 +131,24 @@ router.delete("/:id", requireLogin, async (req, res) => {
     }
 });
 
+//see tasks for a specific user
+router.get("/assigned/:userId", requireLogin, async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const tasks = await db.all(`
+      SELECT t.*, p.name AS project_name
+      FROM tasks t
+      LEFT JOIN projects p ON t.project_id = p.id
+      WHERE t.assigned_to = ?
+    `, [userId]);
+
+    res.json({ tasks });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch tasks for user" });
+  }
+});
 
 
 
