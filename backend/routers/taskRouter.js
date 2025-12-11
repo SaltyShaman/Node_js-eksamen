@@ -44,6 +44,31 @@ router.get("/", requireLogin, async (req, res) => {
     }
 });
 
+//see tasks per staff
+router.get("/staff", requireLogin, async (req, res) => {
+  try {
+    const users = await db.all("SELECT id, username FROM users");
+
+    const staffTasks = await Promise.all(
+      users.map(async (u) => {
+        const tasks = await db.all(
+          `SELECT t.*, p.name AS project_name
+           FROM tasks t
+           LEFT JOIN projects p ON t.project_id = p.id
+           WHERE t.assigned_to = ?`,
+           [u.id]
+        );
+        return { ...u, tasks };
+      })
+    );
+
+    res.json({ staffTasks });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch staff tasks" });
+  }
+});
+
 // 🔹 Read single task
 router.get("/:id", requireLogin, async (req, res) => {
     try {
@@ -105,5 +130,8 @@ router.delete("/:id", requireLogin, async (req, res) => {
         res.status(500).json({ error: "Failed to delete task" });
     }
 });
+
+
+
 
 export default router;

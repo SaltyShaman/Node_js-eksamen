@@ -69,13 +69,13 @@ if (deleteMode) {
         ['Staff1', 'staff@example.com', hashedStaff, 'STAFF']
     );
 
-    // Seed 1 project oprettet af Team Leader
+    // Seed 1 project made by team leader
     const { lastID: projectId } = await db.run(
         `INSERT INTO projects (name, description, created_by) VALUES (?, ?, ?)`,
         ['Website Redesign', 'Redesign company website for better UX', leaderId]
     );
 
-    // Seed 3 tasks tilknyttet projektet
+    // Seed 3 tasks to project
     await db.run(
         `INSERT INTO tasks (project_id, title, description, assigned_to, status) VALUES (?, ?, ?, ?, ?)`,
         [projectId, 'Design homepage', 'Create new homepage layout', staffId, 'todo']

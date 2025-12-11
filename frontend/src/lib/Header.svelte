@@ -1,5 +1,6 @@
 <script>
     import { user, logout } from "$lib/stores/sessionStore.js";
+    import { goto } from "$app/navigation";
 
     let menuOpen = false;
 
@@ -9,7 +10,16 @@
 
     async function handleLogout() {
         await logout();
-        window.location.href = "/login";
+        goto("/login");
+    }
+
+    function goToStaffTasks() {
+        if ($user.role === "STAFF") {
+            goto(`/tasks/staff/${$user.id}`);
+        } else {
+            // For ADMIN/TEAM_LEADER: fx redirect til side med liste over alle staff
+            goto("/tasks/staff");
+        }
     }
 </script>
 
@@ -19,14 +29,14 @@
         <button class="menu-button" on:click={toggleMenu}>☰</button>
         <ul class:open={menuOpen}>
             {#if $user}
-                <!-- Rollebaseret navigation -->
                 <li><a href="/dashboard">Dashboard</a></li>
                 <li><a href="/projects">Projekter</a></li>
                 {#if $user.role === 'ADMIN' || $user.role === 'TEAM_LEADER'}
-                    <li><a href="/projects/create">Opret Projekter</a></li>
-                    <li><a href="/tasks">Opret/Administrer Tasks</a></li>
+                    <li><a href="/projects/create">Opret Projekt</a></li>
                 {/if}
-                
+
+                <li><button on:click={goToStaffTasks}>Tasks per Staff</button></li>
+
                 <li>{$user.username} ({$user.role})</li>
                 <li><button on:click={handleLogout}>Logout</button></li>
             {/if}
@@ -38,27 +48,9 @@
 </header>
 
 <style>
-    header {
-        background: #222;
-        color: white;
-        padding: 1rem;
-        text-align: center;
-    }
-    .navbar ul {
-        list-style: none;
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-        justify-content: center;
-    }
-    .navbar ul.open {
-        display: block;
-    }
-    .navbar a {
-        color: white;
-        text-decoration: none;
-    }
-    .menu-button {
-        display: none; /* make responsive later*/
-    }
+    header { background: #222; color: white; padding: 1rem; text-align: center; }
+    .navbar ul { list-style: none; display: flex; gap: 1rem; align-items: center; justify-content: center; }
+    .navbar ul.open { display: block; }
+    .navbar a, .navbar button { color: white; text-decoration: none; background: none; border: none; cursor: pointer; }
+    .menu-button { display: none; }
 </style>
