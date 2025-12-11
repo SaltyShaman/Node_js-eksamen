@@ -1,5 +1,5 @@
 import { io } from "socket.io-client";
-import { isAuthenticated } from "./sessionStore.js";
+import { isAuthenticated } from "$lib/stores/sessionStore.js";
 
 let socket = null;
 
@@ -7,21 +7,25 @@ export function getSocket() {
     return socket;
 }
 
-
 export function connectSocket() {
+    if (socket) return socket;
 
-    if (socket) return socket; //if there already is a socket
-
-    socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:8080", { //get the socket from the .env file
-        withCredentials: true
+    // Backend URL, sender cookies til session
+    socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:8080", {
+        withCredentials: true,
+        transports: ["websocket", "polling"]
     });
 
-        socket.on("connect", () => {
+    socket.on("connect", () => {
         console.log("Connected to Socket.IO:", socket.id);
     });
 
     socket.on("disconnect", () => {
         console.log("Socket disconnected");
+    });
+
+    socket.on("connect_error", (err) => {
+        console.error("Socket connection error:", err.message);
     });
 
     return socket;
@@ -34,11 +38,3 @@ export function disconnectSocket() {
     }
 }
 
-//connect socket when logging in:
-isAuthenticated.subscribe((auth) => {
-    if (auth) {
-        connectSocket();
-    } else {
-        disconnectSocket();
-    }
-});

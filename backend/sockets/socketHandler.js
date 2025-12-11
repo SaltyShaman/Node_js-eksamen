@@ -1,27 +1,35 @@
 export default function socketHandler(io) {
-    // Middleware til at tjekke session
+    // Middleware for session check
     io.use((socket, next) => {
         const session = socket.request.session;
         if (session && session.user) {
             next();
         } else {
+            console.log("Unauthorized socket connection attempt");
             next(new Error("Not authenticated"));
         }
     });
 
     io.on("connection", (socket) => {
-        console.log("User connected:", socket.request.session.user.username);
+        const { user } = socket.request.session;
+        const username = user.username;
+        const userId = user.id;
 
-        // Eksempel på chat event
+        console.log("User connected:", username, "ID:", userId);
+
+        // --- Eksempel chat event ---
         socket.on("chat message", (msg) => {
-            io.emit("chat message", {
-                user: socket.request.session.user.username,
-                message: msg
-            });
+            io.emit("chat message", { user: username, message: msg });
+        });
+
+        // --- Live task updates ---
+        socket.on("task updated", (updatedTask) => {
+            // Broadcast til alle clients
+            io.emit("task updated", updatedTask);
         });
 
         socket.on("disconnect", () => {
-            console.log("User disconnected:", socket.request.session.user.username);
+            console.log("User disconnected:", username);
         });
     });
 }
