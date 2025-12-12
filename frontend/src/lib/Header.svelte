@@ -33,6 +33,7 @@
                 <li><a href="/projects">Projekter</a></li>
                 {#if $user.role === 'ADMIN' || $user.role === 'TEAM_LEADER'}
                     <li><a href="/projects/create">Opret Projekt</a></li>
+                    <li><a href="/users">Brugere</a></li>
                 {/if}
 
                 <li><button on:click={goToStaffTasks}>Tasks per Staff</button></li>
