@@ -23,13 +23,21 @@ export default function socketHandler(io) {
         });
 
         // --- Live task updates ---
-        socket.on("task updated", (updatedTask) => {
-            // Broadcast til alle clients
-            io.emit("task updated", updatedTask);
-        });
+// --- Live task updates ---
+    socket.on("task updated", (updatedTask) => {
+        io.emit("taskUpdated", updatedTask);   // ✔ samme navn som frontend
+    });
 
-        socket.on("disconnect", () => {
+    socket.on("task created", (newTask) => {
+        io.emit("taskCreated", newTask);       // hvis du har dette event
+    });
+
+    socket.on("task deleted", ({ id, project_id }) => {
+        io.emit("taskDeleted", { id, project_id });
+    });
+
+    socket.on("disconnect", () => {
             console.log("User disconnected:", username);
-        });
+    });
     });
 }

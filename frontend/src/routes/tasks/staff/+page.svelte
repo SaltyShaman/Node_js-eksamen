@@ -1,175 +1,155 @@
 <script>
   import { onMount, onDestroy } from "svelte";
   import { api } from "$lib/api.js";
-  import { connectSocket } from "$lib/socket.js";
+  import { tasks, initTaskSocket, clearTaskListeners } from "$lib/stores/taskStore.js";
 
-  let staffTasks = [];
-  let filteredStaffTasks = [];
+  let staffProjects = []; // Data: staff -> projects -> tasks
+  let filteredStaffProjects = [];
   let loading = true;
   let error = "";
   let searchQuery = "";
 
-  let socket;
+  // Subscribe til taskStore for live updates
+  const unsubscribe = tasks.subscribe(list => {
+    buildStaffProjects(list);
+  });
 
-  async function fetchStaffTasks() {
+  // 🔹 Strukturér tasks som Staff -> Projects -> Tasks
+  function buildStaffProjects(taskList) {
+    const map = {};
+
+    taskList.forEach(task => {
+      const userId = task.assigned_to || "unassigned";
+      const username = task.assigned_to_name || "Ukjent";
+
+      if (!map[userId]) {
+        map[userId] = { id: userId, username, projects: {} };
+      }
+
+      const projectName = task.project_name || "Ukjent projekt";
+
+      if (!map[userId].projects[projectName]) {
+        map[userId].projects[projectName] = [];
+      }
+
+      map[userId].projects[projectName].push(task);
+    });
+
+    // Transformér til array for rendering
+    staffProjects = Object.values(map).map(staff => ({
+      ...staff,
+      projects: Object.entries(staff.projects).map(([projectName, tasks]) => ({
+        projectName,
+        tasks: tasks.sort((a, b) => a.title.localeCompare(b.title))
+      }))
+    }));
+
+    filteredStaffProjects = filterStaffProjects(staffProjects, searchQuery);
+  }
+
+  function filterStaffProjects(staffProjects, query) {
+    if (!query.trim()) return [...staffProjects];
+
+    const q = query.toLowerCase();
+    return staffProjects
+      .map(staff => ({
+        ...staff,
+        projects: staff.projects
+          .map(p => ({
+            ...p,
+            tasks: p.tasks.filter(
+              t =>
+                t.title.toLowerCase().includes(q) ||
+                t.project_name.toLowerCase().includes(q)
+            )
+          }))
+          .filter(p => p.tasks.length > 0)
+      }))
+      .filter(staff =>
+        staff.projects.length > 0 || staff.username.toLowerCase().includes(q)
+      );
+  }
+
+  // 🔹 API integration for initial fetch
+  async function fetchTasksFromAPI() {
     loading = true;
     try {
-      const res = await api("/api/tasks/staff"); 
-      console.log("🔍 /api/tasks/staff response:", res);
-
-      if (!res || !res.staffTasks) {
-        console.error("❌ res.staffTasks undefined:", res);
-        error = "API returnerede ikke staffTasks.";
+      const res = await api("/api/tasks"); // hent alle tasks
+      if (!res || !res.tasks) {
+        error = "Kunne ikke hente tasks fra API";
         return;
       }
 
-      staffTasks = res.staffTasks.map(staff => ({
-        ...staff,
-        tasks: (staff.tasks || []).sort((a, b) =>
-          (a.project_name || "").localeCompare(b.project_name || "")
-        )
+      const flatTasks = res.tasks.map(t => ({
+        ...t,
+        assigned_to_name: t.assigned_to_name || "Ukjent"
       }));
 
-      filteredStaffTasks = [...staffTasks];
+      tasks.set(flatTasks); // push til store → triggers buildStaffProjects
     } catch (err) {
       console.error(err);
-      error = "Kunne ikke hente tasks for staff";
+      error = "Fejl ved hentning af tasks";
     } finally {
       loading = false;
     }
   }
 
-  // Søgning
-  $: filteredStaffTasks =
-    searchQuery.trim() === ""
-      ? [...staffTasks]
-      : staffTasks
-          .map(staff => ({
-            ...staff,
-            tasks: staff.tasks.filter(
-              t =>
-                t.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                t.project_name?.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-          }))
-          .filter(
-            staff =>
-              staff.tasks.length > 0 ||
-              staff.username.toLowerCase().includes(searchQuery.toLowerCase())
-          );
-
-  let handleTaskUpdated;
-  let handleTaskCreated;
-  let handleTaskDeleted;
-
   onMount(async () => {
-    await fetchStaffTasks();
-
-    socket = connectSocket();
-    console.log("🔌 Socket connected:", socket);
-
-    // Event handlers
-    handleTaskUpdated = updatedTask => {
-      console.log("🟡 taskUpdated received:", updatedTask);
-
-      // Fjern task fra gammel staff
-      staffTasks = staffTasks.map(staff => ({
-        ...staff,
-        tasks: staff.tasks.filter(t => t.id !== updatedTask.id)
-      }));
-
-      // Tilføj til ny staff
-      if (updatedTask.assigned_to) {
-        const index = staffTasks.findIndex(s => s.id === updatedTask.assigned_to);
-        if (index !== -1) {
-          staffTasks[index].tasks.push(updatedTask);
-          staffTasks[index].tasks.sort((a, b) => a.project_name.localeCompare(b.project_name));
-        }
-      }
-
-      filteredStaffTasks = [...staffTasks];
-    };
-
-    handleTaskCreated = newTask => {
-      console.log("🟢 taskCreated received:", newTask);
-
-      if (newTask.assigned_to) {
-        const index = staffTasks.findIndex(s => s.id === newTask.assigned_to);
-        if (index !== -1) {
-          staffTasks[index].tasks.push(newTask);
-          staffTasks[index].tasks.sort((a, b) => a.project_name.localeCompare(b.project_name));
-        }
-      }
-
-      filteredStaffTasks = [...staffTasks];
-    };
-
-    handleTaskDeleted = ({ id }) => {
-      console.log("🔴 taskDeleted received:", id);
-
-      staffTasks = staffTasks.map(staff => ({
-        ...staff,
-        tasks: staff.tasks.filter(t => t.id !== id)
-      }));
-
-      filteredStaffTasks = [...staffTasks];
-    };
-
-    // Socket listeners
-    socket.on("taskUpdated", handleTaskUpdated);
-    socket.on("taskCreated", handleTaskCreated);
-    socket.on("taskDeleted", handleTaskDeleted);
+    await fetchTasksFromAPI();
+    try {
+      initTaskSocket(); // start socket listeners
+    } catch (err) {
+      console.error("Kunne ikke initialisere sockets:", err);
+      error = "Noget gik galt med websocket.";
+    }
   });
 
   onDestroy(() => {
-    if (socket) {
-      socket.off("taskUpdated", handleTaskUpdated);
-      socket.off("taskCreated", handleTaskCreated);
-      socket.off("taskDeleted", handleTaskDeleted);
-    }
+    clearTaskListeners();
+    unsubscribe();
   });
 </script>
 
 <style>
-  .staff-container {
-    padding: 1rem;
-  }
-  .staff-block {
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    border: 1px solid #444;
-    border-radius: 8px;
-  }
-
+  .staff-container { padding: 1rem; }
+  .staff-block { margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #444; border-radius: 8px; }
+  .project-block { margin-left: 1rem; margin-bottom: 1rem; padding: 0.5rem; border-left: 3px solid #888; }
+  .task-item { margin-left: 1rem; }
 </style>
 
-{#if loading}
-  <p>Indlæser...</p>
-{:else if error}
-  <p style="color: red">{error}</p>
-{:else}
-  <div class="staff-container">
+<div class="staff-container">
+  {#if loading}
+    <p>Indlæser...</p>
+  {:else if error}
+    <p style="color:red">{error}</p>
+  {:else}
     <input
       type="text"
-      placeholder="Søg efter medarbejder, task eller projekt..."
+      placeholder="Søg efter medarbejder, projekt eller task..."
       bind:value={searchQuery}
       style="margin-bottom: 1rem; width: 100%; padding: 0.5rem;"
+      on:input={() => filteredStaffProjects = filterStaffProjects(staffProjects, searchQuery)}
     />
 
-    {#each filteredStaffTasks as staff}
+    {#each filteredStaffProjects as staff}
       <div class="staff-block">
         <h2>{staff.username}</h2>
 
-        {#if staff.tasks.length === 0}
+        {#if staff.projects.length === 0}
           <p><i>Ingen tasks</i></p>
         {:else}
-          {#each staff.tasks as task}
-            <div class="task">
-              <strong>{task.title}</strong> — {task.project_name}
+          {#each staff.projects as project}
+            <div class="project-block">
+              <strong>{project.projectName}</strong>
+              {#each project.tasks as task}
+                <div class="task-item">
+                  {task.title} ({task.status})
+                </div>
+              {/each}
             </div>
           {/each}
         {/if}
       </div>
     {/each}
-  </div>
-{/if}
+  {/if}
+</div>

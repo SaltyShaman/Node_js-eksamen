@@ -1,83 +1,70 @@
 import { Router } from "express";
 import requireLogin from "../middleware/requireLogin.js";
 import db from "../database/connection.js";
+import { getIo } from "../sockets/socketIoInstance.js";
 
 const router = Router();
+const socketIo = getIo(); // brug socketIo til emit
 
-//first: see all projects and associated tasks
-
+// 🔹 Get all projects with tasks
 router.get("/", requireLogin, async (req, res) => {
-    try {
-        // see all projects
-        const projects = await db.all("SELECT * FROM projects");
+  try {
+    const projects = await db.all("SELECT * FROM projects");
 
-        // tasks per project
-        for (let project of projects) {
-            const tasks = await db.all(
-                "SELECT t.id, t.title, t.description, t.status, u.username AS assigned_to FROM tasks t LEFT JOIN users u ON t.assigned_to = u.id WHERE project_id = ?",
-                [project.id]
-            );
-            project.tasks = tasks;
-        }
-
-        res.json({ projects });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Failed to fetch projects" });
+    for (let project of projects) {
+      const tasks = await db.all(
+        "SELECT t.id, t.title, t.description, t.status, u.username AS assigned_to FROM tasks t LEFT JOIN users u ON t.assigned_to = u.id WHERE project_id = ?",
+        [project.id]
+      );
+      project.tasks = tasks;
     }
+
+    res.json({ projects });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch projects" });
+  }
 });
 
+// 🔹 Search projects
 router.get("/search", requireLogin, async (req, res) => {
-    const query = req.query.query || "";
+  const query = req.query.query || "";
+  try {
+    const projects = await db.all(
+      `SELECT DISTINCT p.* 
+       FROM projects p
+       LEFT JOIN tasks t ON t.project_id = p.id
+       WHERE p.name LIKE ? OR t.title LIKE ?`,
+      [`%${query}%`, `%${query}%`]
+    );
 
-    try {
-        // Find projekter baseret på projekt- eller task-navn
-        const projects = await db.all(
-            `
-            SELECT DISTINCT p.*
-            FROM projects p
-            LEFT JOIN tasks t ON t.project_id = p.id
-            WHERE p.name LIKE ? OR t.title LIKE ?
-            `,
-            [`%${query}%`, `%${query}%`]
-        );
-
-        // Hent tasks for hvert fundet projekt
-        for (let project of projects) {
-            const tasks = await db.all(
-                `
-                SELECT t.id, t.title, t.description, t.status, u.username AS assigned_to
-                FROM tasks t
-                LEFT JOIN users u ON t.assigned_to = u.id
-                WHERE t.project_id = ?
-                `,
-                [project.id]
-            );
-            project.tasks = tasks;
-        }
-
-        res.json({ projects });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Fejl ved søgning" });
+    for (let project of projects) {
+      const tasks = await db.all(
+        "SELECT t.id, t.title, t.description, t.status, u.username AS assigned_to FROM tasks t LEFT JOIN users u ON t.assigned_to = u.id WHERE project_id = ?",
+        [project.id]
+      );
+      project.tasks = tasks;
     }
+
+    res.json({ projects });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Fejl ved søgning" });
+  }
 });
 
-//find single project by id
+// 🔹 Get single project
 router.get("/:id", requireLogin, async (req, res) => {
   try {
     const project = await db.get("SELECT * FROM projects WHERE id = ?", [req.params.id]);
     if (!project) return res.status(404).json({ error: "Project not found" });
 
     const tasks = await db.all(
-      `SELECT t.id, t.title, t.description, t.status, u.username AS assigned_to
-       FROM tasks t
-       LEFT JOIN users u ON t.assigned_to = u.id
-       WHERE project_id = ?`,
+      "SELECT t.id, t.title, t.description, t.status, u.username AS assigned_to FROM tasks t LEFT JOIN users u ON t.assigned_to = u.id WHERE project_id = ?",
       [project.id]
     );
-
     project.tasks = tasks;
+
     res.json({ project });
   } catch (err) {
     console.error(err);
@@ -85,7 +72,7 @@ router.get("/:id", requireLogin, async (req, res) => {
   }
 });
 
-//create project - remember projects are created without tasks
+// 🔹 Create project
 router.post("/", requireLogin, async (req, res) => {
   try {
     const { name, description } = req.body;
@@ -97,14 +84,18 @@ router.post("/", requireLogin, async (req, res) => {
     );
 
     const project = await db.get("SELECT * FROM projects WHERE id = ?", [lastID]);
+
+    // Emit event
+    socketIo?.emit("projectCreated", project);
+
     res.json({ project });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to create project" });
   }
 });
-        
-    // 🔹 UPDATE project
+
+// 🔹 Update project
 router.put("/:id", requireLogin, async (req, res) => {
   try {
     const { name, description } = req.body;
@@ -117,6 +108,10 @@ router.put("/:id", requireLogin, async (req, res) => {
     );
 
     const updatedProject = await db.get("SELECT * FROM projects WHERE id = ?", [req.params.id]);
+
+    // Emit event
+    socketIo?.emit("projectUpdated", updatedProject);
+
     res.json({ project: updatedProject });
   } catch (err) {
     console.error(err);
@@ -124,19 +119,22 @@ router.put("/:id", requireLogin, async (req, res) => {
   }
 });
 
-// 🔹 DELETE project
+// 🔹 Delete project
 router.delete("/:id", requireLogin, async (req, res) => {
   try {
     const project = await db.get("SELECT * FROM projects WHERE id = ?", [req.params.id]);
     if (!project) return res.status(404).json({ error: "Project not found" });
 
     await db.run("DELETE FROM projects WHERE id = ?", [req.params.id]);
+
+    // Emit event
+    socketIo?.emit("projectDeleted", { id: req.params.id });
+
     res.json({ message: "Project deleted successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to delete project" });
   }
 });
-
 
 export default router;

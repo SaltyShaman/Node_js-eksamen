@@ -1,44 +1,38 @@
 <script>
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import TaskForm from "$lib/components/TaskForm.svelte";
   import TaskList from "$lib/components/TaskList.svelte";
-  import { api } from "$lib/api.js";
+
+  import { taskStore, fetchTasks, initTaskSocket, clearTaskListeners } from "$lib/stores/taskStore.js";
+  import { projectStore, fetchProjects } from "$lib/stores/projectStore.js";
 
   let tasks = [];
   let projects = [];
 
-  async function fetchProjects() {
-    const res = await api("/api/projects");
-    projects = res.projects;
-  }
-
-  async function fetchTasks() {
-    const res = await api("/api/tasks"); // Din backend route til tasks
-    tasks = res.tasks;
-  }
+  // Subscribe til stores
+  const unsubscribeTasks = taskStore.subscribe(value => tasks = value);
+  const unsubscribeProjects = projectStore.subscribe(value => projects = value);
 
   onMount(async () => {
+    // Hent initial data
     await fetchProjects();
     await fetchTasks();
+
+    // Start Socket.IO lytter
+    initTaskSocket();
   });
 
-  function handleTaskCreated(task) {
-    tasks = [...tasks, task];
-  }
+  onDestroy(() => {
+    // Fjern socket listeners
+    clearTaskListeners();
 
-  function handleTaskUpdated(updatedTask) {
-    tasks = tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
-  }
-
-  function handleTaskDeleted(deletedId) {
-    tasks = tasks.filter(t => t.id !== deletedId);
-  }
+    unsubscribeTasks();
+    unsubscribeProjects();
+  });
 </script>
 
 <h1>Opret og administrer Tasks</h1>
 
-<TaskForm {projects} on:created={e => handleTaskCreated(e.detail)} />
+<TaskForm {projects} />
 
-<TaskList {tasks} 
-          on:updated={e => handleTaskUpdated(e.detail)} 
-          on:deleted={e => handleTaskDeleted(e.detail)} />
+<TaskList {tasks} />

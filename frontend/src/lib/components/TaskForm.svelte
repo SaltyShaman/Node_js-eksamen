@@ -1,27 +1,16 @@
 <script>
-  import { createEventDispatcher, onMount } from "svelte";
   import { api } from "$lib/api.js";
+  import { addTask, updateTask } from "$lib/stores/taskStore.js";
 
-  export let project; // På edit-siden: projektet vi opretter task til
-  export let task = null; // Hvis man vil redigere en eksisterende task
+  export let project;
+  export let task = null;
 
-  const dispatch = createEventDispatcher();
-
-  let title = "";
-  let description = "";
-  let assigned_to = "";
-  let status = "todo";
+  let title = task?.title || "";
+  let description = task?.description || "";
+  let assigned_to = task?.assigned_to || "";
+  let status = task?.status || "todo";
   let loading = false;
   let error = "";
-
-  onMount(() => {
-    if (task) {
-      title = task.title;
-      description = task.description || "";
-      assigned_to = task.assigned_to || "";
-      status = task.status || "todo";
-    }
-  });
 
   async function handleSubmit() {
     if (!title.trim()) {
@@ -35,21 +24,21 @@
     try {
       let res;
       if (task) {
-        // update task
+        // Update eksisterende task
         res = await api(`/api/tasks/${task.id}`, {
           method: "PUT",
           body: JSON.stringify({ title, description, assigned_to, status, project_id: project.id })
         });
-        dispatch("updated", res.task);
+        updateTask(res.task);  // taskStore håndterer state og socket-opdatering
       } else {
-        // make new task
+        // Opret ny task
         res = await api("/api/tasks", {
           method: "POST",
           body: JSON.stringify({ title, description, assigned_to, status, project_id: project.id })
         });
-        dispatch("created", res.task);
+        addTask(res.task);  // taskStore håndterer state og socket-opdatering
 
-        // clear form
+        // Reset form
         title = "";
         description = "";
         assigned_to = "";
@@ -64,43 +53,27 @@
   }
 </script>
 
-<form on:submit|preventDefault={handleSubmit} style="margin-bottom:1rem;">
-  {#if error}
-    <p style="color:red">{error}</p>
-  {/if}
-  <div>
-    <label>Titel</label>
-    <input type="text" bind:value={title} placeholder="Titel på task" required />
-  </div>
-  <div>
-    <label>Beskrivelse</label>
-    <textarea bind:value={description} placeholder="Beskrivelse"></textarea>
-  </div>
-  <div>
-    <label>Assigned to (username)</label>
-    <input type="text" bind:value={assigned_to} placeholder="Brugernavn" />
-  </div>
-  <div>
-    <label>Status</label>
-    <select bind:value={status}>
-      <option value="todo">Todo</option>
-      <option value="in_progress">In Progress</option>
-      <option value="done">Done</option>
-    </select>
-  </div>
+<form on:submit|preventDefault={handleSubmit}>
+  {#if error}<p style="color:red">{error}</p>{/if}
+  <input type="text" placeholder="Titel" bind:value={title} required />
+  <textarea placeholder="Beskrivelse" bind:value={description}></textarea>
+  <input type="text" placeholder="Assigned to" bind:value={assigned_to} />
+  <select bind:value={status}>
+    <option value="todo">Todo</option>
+    <option value="in_progress">In Progress</option>
+    <option value="done">Done</option>
+  </select>
   <button type="submit" disabled={loading}>
     {task ? "Opdater Task" : "Opret Task"}
   </button>
 </form>
 
 <style>
-  form div {
-    margin-bottom: 0.5rem;
-  }
   input, textarea, select {
     width: 100%;
     padding: 0.4rem;
     margin-top: 0.2rem;
+    margin-bottom: 0.5rem;
   }
   button {
     padding: 0.5rem 1rem;

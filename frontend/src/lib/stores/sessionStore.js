@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { api } from '../api.js';
+import { api } from "$lib/api.js";
 
 export const user = writable(null);
 export const isAuthenticated = writable(false);

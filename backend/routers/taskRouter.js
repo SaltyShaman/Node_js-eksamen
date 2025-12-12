@@ -22,7 +22,7 @@ router.post("/", requireLogin, async (req, res) => {
 
     const task = await db.get("SELECT * FROM tasks WHERE id = ?", [lastID]);
 
-    // Emit event
+    // Emit event via Socket.IO
     socketIo?.emit("taskCreated", task);
 
     res.json({ task });
@@ -32,7 +32,7 @@ router.post("/", requireLogin, async (req, res) => {
   }
 });
 
-// 🔹 Get all tasks (per project)
+// 🔹 Get all tasks
 router.get("/", requireLogin, async (req, res) => {
   try {
     const tasks = await db.all(`
@@ -135,7 +135,7 @@ router.delete("/:id", requireLogin, async (req, res) => {
     await db.run("DELETE FROM tasks WHERE id = ?", [req.params.id]);
 
     // Emit event
-    socketIo?.emit("taskDeleted", { id: req.params.id });
+    socketIo?.emit("taskDeleted", { id: req.params.id, project_id: task.project_id });
 
     res.json({ message: "Task deleted successfully" });
   } catch (err) {
@@ -146,15 +146,13 @@ router.delete("/:id", requireLogin, async (req, res) => {
 
 // 🔹 Tasks for a specific user
 router.get("/assigned/:userId", requireLogin, async (req, res) => {
-  const userId = req.params.userId;
-
   try {
     const tasks = await db.all(
       `SELECT t.*, p.name AS project_name
        FROM tasks t
        LEFT JOIN projects p ON t.project_id = p.id
        WHERE t.assigned_to = ?`,
-      [userId]
+      [req.params.userId]
     );
 
     res.json({ tasks });

@@ -1,68 +1,74 @@
 <script>
   import { onMount, onDestroy } from "svelte";
-  import { api } from "$lib/api.js";
   import { page } from "$app/stores";
-  import { connectSocket, getSocket } from "$lib/socket.js";
+  import { tasks, initTaskSocket, clearTaskListeners } from "$lib/stores/taskStore.js";
+  import { api } from "$lib/api.js";
 
-  let tasks = [];
+  let userId;
+  $: userId = $page.params.id;
+
+  let myTasks = [];
   let filteredTasks = [];
   let loading = true;
   let error = "";
   let searchQuery = "";
 
-  let userId;
-  $: userId = $page.params.id;
+  // Subscribe til taskStore for live updates
+  const unsubscribe = tasks.subscribe(list => {
+    myTasks = list
+      .filter(t => t.assigned_to === Number(userId))
+      .sort((a, b) => a.project_name.localeCompare(b.project_name));
+    filteredTasks = filterTasks(myTasks, searchQuery);
+  });
 
+  function filterTasks(taskList, query) {
+    if (!query.trim()) return [...taskList];
+    const q = query.toLowerCase();
+    return taskList.filter(
+      t => t.title.toLowerCase().includes(q) || t.project_name.toLowerCase().includes(q)
+    );
+  }
+
+  // 🔹 API integration: hent initial tasks for denne bruger
   async function fetchMyTasks() {
     loading = true;
     try {
       const res = await api(`/api/tasks/assigned/${userId}`);
-      tasks = res.tasks.sort((a, b) => a.project_name.localeCompare(b.project_name));
-      filteredTasks = tasks;
+      if (!res?.tasks) {
+        error = "Kunne ikke hente dine tasks";
+        return;
+      }
+
+      // Push til taskStore → triggerer live update via subscription
+      const flatTasks = res.tasks.map(t => ({
+        ...t,
+        assigned_to_name: t.assigned_to_name || "Ukjent"
+      }));
+      tasks.set(flatTasks);
+
     } catch (err) {
       console.error(err);
-      error = "Kunne ikke hente dine tasks";
+      error = "Fejl ved hentning af tasks";
     } finally {
       loading = false;
     }
   }
 
-  // filtering based on search
-  $: if (searchQuery.trim() === "") {
-    filteredTasks = tasks;
-  } else {
-    filteredTasks = tasks.filter(
-      t =>
-        t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.project_name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }
-
-  // --- Socket integration for live updates ---
-  let socket;
-
-  onMount(() => {
-    fetchMyTasks();
-    socket = connectSocket();
-
-    socket.on("task updated", (updatedTask) => {
-      // update if task is assigned to the user
-      if (updatedTask.assigned_to === Number(userId)) {
-        const index = tasks.findIndex(t => t.id === updatedTask.id);
-        if (index !== -1) {
-          tasks[index] = updatedTask;
-        } else {
-          tasks.push(updatedTask);
-        }
-        tasks.sort((a, b) => a.project_name.localeCompare(b.project_name));
-      }
-    });
+  onMount(async () => {
+    await fetchMyTasks();
+    try {
+      initTaskSocket(); // start WebSocket-listerner
+    } catch (err) {
+      console.error("Kunne ikke initialisere sockets:", err);
+      error = "Noget gik galt med websocket.";
+    }
   });
 
+  $: filteredTasks = filterTasks(myTasks, searchQuery);
+
   onDestroy(() => {
-    if (socket) {
-      socket.off("task updated");
-    }
+    clearTaskListeners();
+    unsubscribe();
   });
 </script>
 
@@ -76,7 +82,7 @@
 />
 
 {#if loading}
-  <p>Loading...</p>
+  <p>Indlæser...</p>
 {:else if error}
   <p style="color:red">{error}</p>
 {:else if filteredTasks.length === 0}
@@ -85,7 +91,7 @@
   <ul>
     {#each filteredTasks as task}
       <li>
-        {task.project_name}: {task.title} - {task.status}
+        {task.project_name}: {task.title} — {task.status}
       </li>
     {/each}
   </ul>
