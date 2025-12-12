@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from "svelte";
   import { goto } from "$app/navigation";
   import TaskForm from "$lib/components/TaskForm.svelte";
+  import { api } from "$lib/api.js";
 
   import { projects, fetchProjects, initProjectSocket, clearProjectListeners } from "$lib/stores/projectStore.js";
   import { tasks, fetchTasks, initTaskSocket } from "$lib/stores/taskStore.js";
@@ -35,17 +36,17 @@
   }
 
   // --- Task handlers
-  function handleTaskDeleted(projectId, taskId) {
+async function handleTaskDeleted(projectId, taskId) {
     if (!confirm("Er du sikker på, at du vil slette denne task?")) return;
-    fetch(`/api/tasks/${taskId}`, { method: "DELETE" })
-      .then(() => {
+
+    try {
+        await api(`/api/tasks/${taskId}`, { method: "DELETE" });
         tasks.update(list => list.filter(t => t.id !== taskId));
-      })
-      .catch(err => {
+    } catch (err) {
         console.error(err);
         taskError = "Kunne ikke slette task";
-      });
-  }
+    }
+}
 
   onMount(async () => {
     await fetchProjects();
