@@ -45,13 +45,14 @@
       return;
     }
     if (!assigned_to.trim()) {
-      error = "Du skal tilknytte en bruger til tasken.";
+      error = "Du skal tilknytte en bruger fra databasen til tasken.";
       return;
     }
 
-    // --- Tjek at brugeren findes i backend
-    if (!users.some(u => u.username === assigned_to)) {
-      error = "Brugeren findes ikke i systemet.";
+    // --- Validering af bruger
+    const userExists = users.some(u => u.username === assigned_to);
+    if (!userExists) {
+      error = "❌ Brugeren findes ikke i systemet.";
       return;
     }
 
