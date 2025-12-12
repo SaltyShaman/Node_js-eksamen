@@ -13,6 +13,7 @@ import protectedRouter from "./routers/protectedRouter.js";
 import authRouter from "./routers/authRouter.js";
 import projectRouter from "./routers/projectRouter.js";
 import taskRouter from "./routers/taskRouter.js";
+import userRouter from "./routers/userRouter.js";
 
 import socketHandler from "./sockets/socketHandler.js";
 import { setIo } from "./sockets/socketIoInstance.js";
@@ -33,6 +34,7 @@ app.use(protectedRouter);
 app.use("/auth", authRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api/tasks", taskRouter);
+app.use("/api/users", userRouter);
 
 // --- Socket.IO opsætning med session ---
 const io = new Server(server, {
