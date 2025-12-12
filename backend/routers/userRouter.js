@@ -108,7 +108,7 @@ router.put("/:id", requireLogin, async (req, res) => {
     );
 
     const io = getIo();
-    io.emit("userUpdated", user);
+    io.emit("userUpdated", updatedUser);
 
     res.json({ user: updatedUser });
   } catch (err) {
