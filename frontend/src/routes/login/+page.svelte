@@ -1,15 +1,15 @@
 <script>
-    import { login, isAuthenticated, loadingSession } from "$lib/stores/sessionStore.js";
+    import { login, isAuthenticated, loadingSession, user } from "$lib/stores/sessionStore.js";
     import { onMount } from "svelte";
 
     let username = "";
     let password = "";
     let errorMessage = "";
 
-    //if user is logged in then redirect
+    // Redirect hvis allerede logget ind
     onMount(() => {
         if (!$loadingSession && $isAuthenticated) {
-            window.location.href = "/dashboard";
+            redirectByRole($user.role, $user.id);
         }
     });
 
@@ -17,16 +17,27 @@
         e.preventDefault();
         errorMessage = "";
 
-        const res = await login(username, password);
-        
-        if (!res) {
+        const loggedInUser = await login(username, password);
+
+        if (!loggedInUser) {
             errorMessage = "Invalid username or password";
             return;
         }
 
-        window.location.href = "/dashboard";
+        redirectByRole(loggedInUser.role, loggedInUser.id);
     }
 
+    function redirectByRole(role, id) {
+        if (role === "STAFF") {
+            window.location.href = `/tasks/staff/${id}`;
+        } else if (role === "TEAM_LEADER") {
+            window.location.href = "/tasks/staff"; // liste over staff
+        } else if (role === "ADMIN") {
+            window.location.href = "/users"; // admin-side
+        } else {
+            window.location.href = "/dashboard"; // fallback
+        }
+    }
 </script>
 
 <main>
@@ -62,6 +73,4 @@
         padding: 0.5rem;
     }
 </style>
-
-
 

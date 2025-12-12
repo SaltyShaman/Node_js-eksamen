@@ -1,26 +1,19 @@
 <script>
   import { users, removeUser } from "$lib/stores/userStore.js";
-  import { onMount } from "svelte";
-  import UserForm from "./UserForm.svelte";
   import { api } from "$lib/api.js";
+  import { createEventDispatcher } from "svelte";
 
   export let currentUserRole = "STAFF";
-
-  let editingUser = null;
-
-  onMount(() => {
-    users.subscribe(value => value);
-  });
+  const dispatch = createEventDispatcher();
 
   function editUser(user) {
-    editingUser = { ...user };
+    dispatch("editUser", user);
   }
 
   async function deleteUser(userId) {
     if (!confirm("Er du sikker på, du vil slette brugeren?")) return;
 
     try {
-      // Brug api helper i stedet for fetch direkte
       await api(`/api/users/${userId}`, { method: "DELETE" });
       removeUser(userId);
     } catch (err) {

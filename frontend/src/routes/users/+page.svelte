@@ -2,38 +2,47 @@
   import { onMount } from "svelte";
   import UserList from "$lib/components/UserList.svelte";
   import UserForm from "$lib/components/UserForm.svelte";
-  import { fetchUsers, users } from "$lib/stores/userStore.js";
+  import { fetchUsers, users, addUser, updateUser } from "$lib/stores/userStore.js";
   import { initUserSocket, clearUserListeners } from "$lib/stores/userStore.js";
 
-  // Simuleret rolle – i praksis skal den komme fra din session / auth
-  let currentUserRole = "ADMIN"; // eller "TEAM_LEADER", "STAFF"
+  let currentUserRole = "ADMIN"; // Simuleret rolle
+  let editingUser = null;         // Brugeren der redigeres
 
   onMount(async () => {
     await fetchUsers();
     initUserSocket();
-
-    return () => {
-      clearUserListeners();
-    };
+    return () => clearUserListeners();
   });
+
+  function handleEdit(user) {
+    editingUser = { ...user };
+  }
+
+  function handleCreated(user) {
+    addUser(user);
+    editingUser = null;
+  }
+
+  function handleUpdated(user) {
+    updateUser(user);
+    editingUser = null;
+  }
 </script>
 
 <h1>Brugere</h1>
 
-<!-- UserList viser liste og redigeringsmuligheder -->
-<UserList {currentUserRole} />
+<UserList {currentUserRole} on:editUser={(e) => handleEdit(e.detail)} />
 
-<!-- Hvis currentUserRole er ADMIN eller TEAM_LEADER kan man oprette nye brugere -->
 {#if currentUserRole === "ADMIN" || currentUserRole === "TEAM_LEADER"}
-  <h2>Opret ny bruger</h2>
+  <h2>{editingUser ? "Rediger bruger" : "Opret ny bruger"}</h2>
   <UserForm 
-    canEdit={currentUserRole === "ADMIN" || currentUserRole === "TEAM_LEADER"} 
-    on:created={(e) => console.log("Ny bruger oprettet:", e.detail)}
+    user={editingUser}
+    canEdit={currentUserRole === "ADMIN" || currentUserRole === "TEAM_LEADER"}
+    on:created={(e) => handleCreated(e.detail)}
+    on:updated={(e) => handleUpdated(e.detail)}
   />
 {/if}
 
 <style>
-  h1, h2 {
-    margin-bottom: 0.5rem;
-  }
+  h1, h2 { margin-bottom: 0.5rem; }
 </style>

@@ -33,7 +33,7 @@ export async function login(username, password) {
 
         user.set(res.user);
         isAuthenticated.set(true);
-        return res;
+        return res.user;
 
     } catch (err) {
         return null; // network or other failure
