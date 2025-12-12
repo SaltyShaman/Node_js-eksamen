@@ -1,6 +1,8 @@
 import { Router } from "express";
 import requireLogin from "../middleware/requireLogin.js";
 import db from "../database/connection.js";
+import { getIo } from "../sockets/socketIoInstance.js";
+
 
 const router = Router();
 
@@ -63,6 +65,9 @@ router.post("/", requireLogin, async (req, res) => {
       [lastID]
     );
 
+    const io = getIo();
+    io.emit("userCreated", user);
+
     res.json({ user });
   } catch (err) {
     console.error(err);
@@ -102,11 +107,35 @@ router.put("/:id", requireLogin, async (req, res) => {
       [req.params.id]
     );
 
+    const io = getIo();
+    io.emit("userCreated", user);
+
     res.json({ user: updatedUser });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to update user" });
   }
 });
+
+router.delete("/:id", requireLogin, async (req, res) => {
+  try {
+    const user = await db.get("SELECT * FROM users WHERE id = ?", [req.params.id]);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    await db.run("DELETE FROM users WHERE id = ?", [req.params.id]);
+
+    const io = getIo();
+    io.emit("userDeleted", { id: req.params.id });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to delete user" });
+  }
+});
+
+
+
+
 
 export default router;

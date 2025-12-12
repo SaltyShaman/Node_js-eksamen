@@ -1,6 +1,6 @@
 <script>
-  import { api } from "$lib/api.js";
   import { addTask, updateTask } from "$lib/stores/taskStore.js";
+  import { users, fetchUsers, initUserSocket } from "$lib/stores/userStore.js";
   import { onMount } from "svelte";
 
   export let project;
@@ -11,28 +11,19 @@
   let assigned_to = task?.assigned_to || "";
   let status = task?.status || "todo";
 
-  let users = [];        // Alle brugere fra backend
-  let filteredUsers = []; // Brugere der matches af søgning
   let searchQuery = "";   // Søgetekst for dropdown
-
   let loading = false;
   let error = "";
 
-  // Hent brugere ved mount
-  onMount(async () => {
-    try {
-      const data = await api("/api/users");
-      users = data.users || [];
-      filteredUsers = users;
-    } catch (err) {
-      console.error("Kunne ikke hente brugere:", err);
-      error = "Fejl ved hentning af brugere";
-    }
+  // Hent brugere og start socket
+  onMount(() => {
+    fetchUsers();
+    initUserSocket();
   });
 
-  // Filtrering baseret på søgning
-  $: filteredUsers = users.filter(u => 
-    !searchQuery.trim() || 
+  // Filtrer brugere baseret på søgning
+  $: filteredUsers = $users.filter(u =>
+    !searchQuery.trim() ||
     u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.role.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -44,35 +35,40 @@
       error = "Titel på task er påkrævet.";
       return;
     }
+
     if (!assigned_to.trim()) {
-      error = "Du skal tilknytte en bruger fra databasen til tasken.";
+      error = "Du skal tilknytte en bruger til tasken.";
       return;
     }
 
-    // --- Validering af bruger
-    const userExists = users.some(u => u.username === assigned_to);
-    if (!userExists) {
-      error = "❌ Brugeren findes ikke i systemet.";
+    // --- Tjek at brugeren findes i store (via WebSocket eller fetch)
+    if (!$users.some(u => u.username === assigned_to)) {
+      error = "Brugeren findes ikke i systemet.";
       return;
     }
 
     loading = true;
+
     try {
       let res;
       if (task) {
         // Update eksisterende task
-        res = await api(`/api/tasks/${task.id}`, {
+        res = await fetch(`/api/tasks/${task.id}`, {
           method: "PUT",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ title, description, assigned_to, status, project_id: project.id })
         });
-        updateTask(res.task);
+        const data = await res.json();
+        updateTask(data.task);
       } else {
         // Opret ny task
-        res = await api("/api/tasks", {
+        res = await fetch("/api/tasks", {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ title, description, assigned_to, status, project_id: project.id })
         });
-        addTask(res.task);
+        const data = await res.json();
+        addTask(data.task);
 
         // Reset form
         title = "";
