@@ -24,16 +24,17 @@
     goto(`/projects/edit/${projectId}`);
   }
 
-  async function handleDelete(projectId) {
+async function handleDelete(projectId) {
     if (!confirm("Er du sikker på, at du vil slette dette projekt?")) return;
+
     try {
-      await fetch(`/api/projects/${projectId}`, { method: "DELETE" });
-      projects.update(list => list.filter(p => p.id !== projectId));
+        await api(`/api/projects/${projectId}`, { method: "DELETE" });
+        projects.update(list => list.filter(p => p.id !== projectId));
     } catch (err) {
-      console.error(err);
-      alert("Kunne ikke slette projektet");
+        console.error(err);
+        alert("Kunne ikke slette projektet");
     }
-  }
+}
 
   // --- Task handlers
 async function handleTaskDeleted(projectId, taskId) {
