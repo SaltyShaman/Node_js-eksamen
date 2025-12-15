@@ -5,6 +5,9 @@ import { connectSocket, getSocket } from "$lib/socket.js";
 // Store for alle brugere
 export const users = writable([]);
 
+// 🔐 Sørger for at socket kun initieres ÉN gang
+let socketInitialized = false;
+
 // Hent brugere fra backend
 export async function fetchUsers() {
   try {
@@ -15,23 +18,33 @@ export async function fetchUsers() {
   }
 }
 
-// Tilføj bruger til store (fx efter oprettelse)
+// ➕ Tilføj bruger (med duplicate-beskyttelse)
 export function addUser(user) {
-  users.update(list => [...list, user]);
+  users.update(list => {
+    if (list.some(u => u.id === user.id)) {
+      return list; // 🛡️ stop duplicates
+    }
+    return [...list, user];
+  });
 }
 
-// Opdater bruger i store
+// 🔄 Opdater bruger
 export function updateUser(updatedUser) {
-  users.update(list => list.map(u => u.id === updatedUser.id ? updatedUser : u));
+  users.update(list =>
+    list.map(u => u.id === updatedUser.id ? updatedUser : u)
+  );
 }
 
-// Fjern bruger fra store
+// ❌ Fjern bruger
 export function removeUser(userId) {
   users.update(list => list.filter(u => u.id !== userId));
 }
 
-// Initialiser socket-lister til brugere
+// 🔌 Initialiser socket-listeners (IDEMPOTENT)
 export function initUserSocket() {
+  if (socketInitialized) return;
+  socketInitialized = true;
+
   const socket = connectSocket();
 
   socket.on("userCreated", (user) => {
@@ -47,7 +60,7 @@ export function initUserSocket() {
   });
 }
 
-// Ryd socket-listeners (valgfrit)
+// 🧹 Ryd socket-listeners (kun hvis nødvendigt)
 export function clearUserListeners() {
   const socket = getSocket();
   if (!socket) return;
@@ -55,4 +68,6 @@ export function clearUserListeners() {
   socket.removeAllListeners("userCreated");
   socket.removeAllListeners("userUpdated");
   socket.removeAllListeners("userDeleted");
+
+  socketInitialized = false;
 }
