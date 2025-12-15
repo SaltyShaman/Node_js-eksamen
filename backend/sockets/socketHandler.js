@@ -15,20 +15,15 @@ export default function socketHandler(io) {
         const username = user.username;
         const userId = user.id;
 
-        console.log("User connected:", username, "ID:", userId);
 
-        // --- Eksempel chat event ---
-        socket.on("chat message", (msg) => {
-            io.emit("chat message", { user: username, message: msg });
-        });
 
         // --- Live task updates ---
     socket.on("task updated", (updatedTask) => {
-        io.emit("taskUpdated", updatedTask);   // ✔ samme navn som frontend
+        io.emit("taskUpdated", updatedTask);   // name has to match frontend
     });
 
     socket.on("task created", (newTask) => {
-        io.emit("taskCreated", newTask);       // hvis du har dette event
+        io.emit("taskCreated", newTask);       
     });
 
     socket.on("task deleted", ({ id, project_id }) => {

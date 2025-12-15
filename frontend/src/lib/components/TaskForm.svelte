@@ -16,13 +16,13 @@
   let loading = false;
   let error = "";
 
-  // Hent brugere + socket
+  // get uers and sockets
   onMount(() => {
     fetchUsers();
     initUserSocket();
   });
 
-  // Filtrer brugere
+  // Filtering for searching
   $: filteredUsers = $users.filter(u =>
     !searchQuery.trim() ||
     u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||

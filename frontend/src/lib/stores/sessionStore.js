@@ -5,7 +5,7 @@ export const user = writable(null);
 export const isAuthenticated = writable(false);
 export const loadingSession = writable(true);
 
-//This function is to be used for all pages requiring a login
+//old function (can probably be deleted)
 export async function loadSession() {
 
     try {

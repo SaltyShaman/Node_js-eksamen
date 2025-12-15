@@ -2,7 +2,7 @@
   import { createEventDispatcher, onMount } from "svelte";
   import { api } from "$lib/api.js";
 
-  export let project = null; // Hvis null, er det et nyt projekt
+  export let project = null; // Hvis null, new project
 
   const dispatch = createEventDispatcher();
 
@@ -30,14 +30,12 @@
     try {
       let res;
       if (project) {
-        // Update eksisterende projekt
         res = await api(`/api/projects/${project.id}`, {
           method: "PUT",
           body: JSON.stringify({ name, description })
         });
         dispatch("updated", res.project);
       } else {
-        // Opret nyt projekt
         res = await api("/api/projects", {
           method: "POST",
           body: JSON.stringify({ name, description })

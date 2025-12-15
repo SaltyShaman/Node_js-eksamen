@@ -27,7 +27,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-app.use(sessionConfig); // <-- din session middleware
+app.use(sessionConfig); 
 app.use(helmet());
 app.use(generalLimiter);
 app.use(protectedRouter);
@@ -36,12 +36,12 @@ app.use("/api/projects", projectRouter);
 app.use("/api/tasks", taskRouter);
 app.use("/api/users", userRouter);
 
-// --- Socket.IO opsætning med session ---
+// --- Socket.IO with session ---
 const io = new Server(server, {
   cors: { origin: 'http://localhost:5173', credentials: true }
 });
 
-// Gør session tilgængelig for Socket.IO
+//make the session avaible
 io.use((socket, next) => {
   sessionConfig(socket.request, {}, next);
 });

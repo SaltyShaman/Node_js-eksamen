@@ -5,29 +5,28 @@
   import UserForm from "$lib/components/UserForm.svelte";
   import { fetchUsers, addUser, updateUser } from "$lib/stores/userStore.js";
   import { initUserSocket, clearUserListeners } from "$lib/stores/userStore.js";
-  import { api } from "$lib/api.js"; // brug din API hjælper
 
-  let currentUserRole = null; // starter uden rolle
+  let currentUserRole = null; // used to reset role and staff redirects
   let editingUser = null;
-  let ready = false; // afventer API kald
+  let ready = false; // await API data 
 
   onMount(async () => {
     try {
   
-      // 🔹 Rollebeskyttelse: STAFF må ikke se siden
+      // 🔹Staff can't even see the formular
       if (currentUserRole === "STAFF") {
-        goto("/"); // send STAFF til forsiden
+        goto("/"); // redirect staff to dashboard
         return;
       }
 
-      // 🔹 Hent brugere fra API og init sockets
+      // 🔹 Get users from API and start sockets
       await fetchUsers();
       initUserSocket();
       ready = true;
 
     } catch (err) {
       console.error("Fejl ved hentning af brugerrolle:", err);
-      goto("/login"); // send ikke-loggede til login
+      goto("/login"); // send to login if user is not logged in
     }
 
     return () => clearUserListeners();

@@ -2,22 +2,21 @@
   import { createEventDispatcher } from "svelte";
   import { api } from "$lib/api.js";
 
-  export let user = null;        // null = opret ny bruger
-  export let canEdit = false;    // ADMIN/TEAM_LEADER kan ændre/oprette
+  export let user = null;        // null = create new users
+  export let canEdit = false;    // ADMIN/TEAM_LEADER restricted
 
   const dispatch = createEventDispatcher();
 
   let username = user?.username || "";
   let email = user?.email || "";
-  let password = "";              // kun påkrævet ved oprettelse
-  let userRole = user?.role || "STAFF";
+  let password = "";              
+  let userRole = user?.role || "STAFF"; //default role option for create
 
   let error = "";
   let loading = false;
 
 async function handleSubmit() {
   error = "";
-  // Password påkrævet kun ved oprettelse
   if (!username.trim() || !email.trim() || (!user && !password.trim())) {
     error = "Brugernavn, email og password er påkrævet";
     return;
@@ -27,7 +26,6 @@ async function handleSubmit() {
   try {
     let res;
     if (user) {
-      // Update eksisterende bruger – send kun password hvis det er udfyldt
       const body = { username, email, role: userRole };
       if (password.trim()) body.password = password;
 
@@ -36,7 +34,6 @@ async function handleSubmit() {
         body: JSON.stringify(body)
       });
     } else {
-      // Opret ny bruger
       res = await api("/api/users", {
         method: "POST",
         body: JSON.stringify({ username, email, role: userRole, password })

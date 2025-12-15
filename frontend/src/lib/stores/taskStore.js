@@ -24,7 +24,7 @@ export async function fetchTasks() {
 
 
 
-// Opdater task
+// update task
 export function updateTask(updatedTask) {
     tasks.update(list => list.map(t => t.id === updatedTask.id ? updatedTask : t));
 }

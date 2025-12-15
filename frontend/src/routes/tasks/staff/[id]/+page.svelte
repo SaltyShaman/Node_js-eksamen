@@ -13,7 +13,7 @@
   let error = "";
   let searchQuery = "";
 
-  // Subscribe til taskStore for live updates
+  // Subscribe to taskStore for live updates
   const unsubscribe = tasks.subscribe(list => {
     myTasks = list
       .filter(t => t.assigned_to === Number(userId))
@@ -29,7 +29,7 @@
     );
   }
 
-  // 🔹 API integration: hent initial tasks for denne bruger
+  //Get tasks for current user (used for staff role)
   async function fetchMyTasks() {
     loading = true;
     try {
@@ -39,7 +39,7 @@
         return;
       }
 
-      // Push til taskStore → triggerer live update via subscription
+      // Push to taskStore → triggerer live update via subscription
       const flatTasks = res.tasks.map(t => ({
         ...t,
         assigned_to_name: t.assigned_to_name || "Ukjent"

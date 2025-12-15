@@ -4,7 +4,7 @@ import db from "../database/connection.js";
 import { getIo } from "../sockets/socketIoInstance.js";
 
 const router = Router();
-const socketIo = getIo(); // brug socketIo til emit
+const socketIo = getIo(); 
 
 // 🔹 Get all projects with tasks
 router.get("/", requireLogin, async (req, res) => {
@@ -22,7 +22,7 @@ router.get("/", requireLogin, async (req, res) => {
     res.json({ projects });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to fetch projects" });
+    res.status(500).json({ error: "Kunne ikke hente projekterne" });
   }
 });
 
@@ -91,7 +91,7 @@ router.post("/", requireLogin, async (req, res) => {
     res.json({ project });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to create project" });
+    res.status(500).json({ error: "Projektet kunne ikke oprettes" });
   }
 });
 
@@ -100,7 +100,7 @@ router.put("/:id", requireLogin, async (req, res) => {
   try {
     const { name, description } = req.body;
     const project = await db.get("SELECT * FROM projects WHERE id = ?", [req.params.id]);
-    if (!project) return res.status(404).json({ error: "Project not found" });
+    if (!project) return res.status(404).json({ error: "Kunne ikke finde projeket" });
 
     await db.run(
       "UPDATE projects SET name = ?, description = ? WHERE id = ?",
@@ -115,7 +115,7 @@ router.put("/:id", requireLogin, async (req, res) => {
     res.json({ project: updatedProject });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to update project" });
+    res.status(500).json({ error: "Opdatering mislykkedes" });
   }
 });
 
@@ -123,17 +123,17 @@ router.put("/:id", requireLogin, async (req, res) => {
 router.delete("/:id", requireLogin, async (req, res) => {
   try {
     const project = await db.get("SELECT * FROM projects WHERE id = ?", [req.params.id]);
-    if (!project) return res.status(404).json({ error: "Project not found" });
+    if (!project) return res.status(404).json({ error: "Kunne ikke finde projektet" });
 
     await db.run("DELETE FROM projects WHERE id = ?", [req.params.id]);
 
     // Emit event
     socketIo?.emit("projectDeleted", { id: req.params.id });
 
-    res.json({ message: "Project deleted successfully" });
+    res.json({ message: "Sletning velkykket" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to delete project" });
+    res.status(500).json({ error: "Sletning mislykkedes" });
   }
 });
 

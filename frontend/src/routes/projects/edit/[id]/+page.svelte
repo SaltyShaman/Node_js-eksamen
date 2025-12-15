@@ -14,7 +14,7 @@
   let id;
   $: id = $page.params.id;
 
-  // Hent projekt og tasks
+  // get the project afer loading
   onMount(async () => {
     try {
       const res = await api(`/api/projects/${id}`);

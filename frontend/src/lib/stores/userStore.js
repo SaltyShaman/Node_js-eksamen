@@ -2,13 +2,13 @@ import { writable } from "svelte/store";
 import { api } from "$lib/api.js";
 import { connectSocket, getSocket } from "$lib/socket.js";
 
-// Store for alle brugere
+// Store for all users
 export const users = writable([]);
 
-// 🔐 Sørger for at socket kun initieres ÉN gang
+// 🔐sockets should only be initailized once
 let socketInitialized = false;
 
-// Hent brugere fra backend
+// get backend users
 export async function fetchUsers() {
   try {
     const data = await api("/api/users");
@@ -18,7 +18,7 @@ export async function fetchUsers() {
   }
 }
 
-// ➕ Tilføj bruger (med duplicate-beskyttelse)
+// ➕ notice the duplicate protection
 export function addUser(user) {
   users.update(list => {
     if (list.some(u => u.id === user.id)) {
@@ -28,14 +28,13 @@ export function addUser(user) {
   });
 }
 
-// 🔄 Opdater bruger
+
 export function updateUser(updatedUser) {
   users.update(list =>
     list.map(u => u.id === updatedUser.id ? updatedUser : u)
   );
 }
 
-// ❌ Fjern bruger
 export function removeUser(userId) {
   users.update(list => list.filter(u => u.id !== userId));
 }

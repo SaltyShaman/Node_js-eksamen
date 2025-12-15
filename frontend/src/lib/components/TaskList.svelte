@@ -3,13 +3,11 @@
 
   export let onEdit = null;
 
-  // Slet task via API og opdater store via socket (taskStore lytter)
   async function deleteTask(taskId) {
     try {
       const res = await fetch(`/api/tasks/${taskId}`, { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Kunne ikke slette task");
-      // TaskStore håndterer socket-opdatering, ingen lokal manipulation nødvendig
     } catch (err) {
       console.error("Fejl ved sletning af task:", err);
     }

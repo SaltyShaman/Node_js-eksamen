@@ -3,7 +3,6 @@ import bcrypt from 'bcrypt';
 
 const deleteMode = process.argv.includes('delete');
 
-// DROP TABLES hvis deleteMode er aktiveret
 if (deleteMode) {
     await db.exec(`DROP TABLE IF EXISTS tasks;`);
     await db.exec(`DROP TABLE IF EXISTS projects;`);
@@ -48,7 +47,7 @@ CREATE TABLE IF NOT EXISTS tasks (
 );
 `);
 
-// Seeding: 1 admin, 1 team_leader, 1 staff og 1 project med 3 tasks
+// Seeding: 1 admin, 1 team_leader, 1 staff and 1 project w/ 3 tasks
 if (deleteMode) {
     const hashedAdmin = await bcrypt.hash('admin123', 10);
     const hashedLeader = await bcrypt.hash('leader123', 10);

@@ -9,21 +9,21 @@
   let tasks = [];
   let projects = [];
 
-  // Subscribe til stores
+  // Subscribe to stores
   const unsubscribeTasks = taskStore.subscribe(value => tasks = value);
   const unsubscribeProjects = projectStore.subscribe(value => projects = value);
 
   onMount(async () => {
-    // Hent initial data
+    // Get initial data
     await fetchProjects();
     await fetchTasks();
 
-    // Start Socket.IO lytter
+    // Start Socket.IO
     initTaskSocket();
   });
 
   onDestroy(() => {
-    // Fjern socket listeners
+    // remove socket listeners
     clearTaskListeners();
 
     unsubscribeTasks();

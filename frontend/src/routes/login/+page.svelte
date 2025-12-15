@@ -6,7 +6,7 @@
     let password = "";
     let errorMessage = "";
 
-    // Redirect hvis allerede logget ind
+
     onMount(() => {
         if (!$loadingSession && $isAuthenticated) {
             redirectByRole($user.role, $user.id);
@@ -31,9 +31,9 @@
         if (role === "STAFF") {
             window.location.href = `/tasks/staff/${id}`;
         } else if (role === "TEAM_LEADER") {
-            window.location.href = "/tasks/staff"; // liste over staff
+            window.location.href = "/tasks/staff"; // list of staff and tasks
         } else if (role === "ADMIN") {
-            window.location.href = "/users"; // admin-side
+            window.location.href = "/users"; // admin- page
         } else {
             window.location.href = "/dashboard"; // fallback
         }
