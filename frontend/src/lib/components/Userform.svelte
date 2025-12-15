@@ -35,14 +35,12 @@ async function handleSubmit() {
         method: "PUT",
         body: JSON.stringify(body)
       });
-      dispatch("updated", res.user);
     } else {
       // Opret ny bruger
       res = await api("/api/users", {
         method: "POST",
         body: JSON.stringify({ username, email, role: userRole, password })
       });
-      dispatch("created", res.user);
 
       // Clear form
       username = "";
