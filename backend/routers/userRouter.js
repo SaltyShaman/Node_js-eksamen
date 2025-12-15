@@ -2,12 +2,13 @@ import { Router } from "express";
 import requireLogin from "../middleware/requireLogin.js";
 import db from "../database/connection.js";
 import { getIo } from "../sockets/socketIoInstance.js";
+import requireRole from "../middleware/requireRole.js";
 
 
 const router = Router();
 
 // 🔹 Get all users
-router.get("/", requireLogin, async (req, res) => {
+router.get("/", requireLogin, requireRole("ADMIN", "TEAM_LEADER"), async (req, res) => {
   try {
     const users = await db.all("SELECT id, username, email, role, created_at FROM users");
     res.json({ users });
@@ -18,7 +19,7 @@ router.get("/", requireLogin, async (req, res) => {
 });
 
 // 🔹 Get single user by ID
-router.get("/:id", requireLogin, async (req, res) => {
+router.get("/:id", requireLogin, requireRole("ADMIN", "TEAM_LEADER"), async (req, res) => {
   try {
     const user = await db.get(
       "SELECT id, username, email, role, created_at FROM users WHERE id = ?",
@@ -33,7 +34,7 @@ router.get("/:id", requireLogin, async (req, res) => {
 });
 
 // 🔹 Check if username exists
-router.get("/exists/:username", requireLogin, async (req, res) => {
+router.get("/exists/:username", requireLogin, requireRole("ADMIN", "TEAM_LEADER"), async (req, res) => {
   try {
     const user = await db.get("SELECT id FROM users WHERE username = ?", [req.params.username]);
     res.json({ exists: !!user });
@@ -44,7 +45,7 @@ router.get("/exists/:username", requireLogin, async (req, res) => {
 });
 
 // 🔹 Create new user
-router.post("/", requireLogin, async (req, res) => {
+router.post("/", requireLogin, requireRole("ADMIN"), async (req, res) => {
   try {
     const { username, email, role, password } = req.body;
     if (!username || !email || !password) {
@@ -80,7 +81,7 @@ router.post("/", requireLogin, async (req, res) => {
 });
 
 // 🔹 Update existing user
-router.put("/:id", requireLogin, async (req, res) => {
+router.put("/:id", requireLogin, requireRole("ADMIN"), async (req, res) => {
   try {
     const { username, email, role, password } = req.body;
 
@@ -121,7 +122,7 @@ router.put("/:id", requireLogin, async (req, res) => {
   }
 });
 
-router.delete("/:id", requireLogin, async (req, res) => {
+router.delete("/:id", requireLogin,  requireRole("ADMIN"), async (req, res) => {
   try {
     const userId = req.params.id;
 
