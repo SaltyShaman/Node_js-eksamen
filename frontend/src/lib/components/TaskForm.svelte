@@ -1,7 +1,8 @@
 <script>
+  import { onMount } from "svelte";
+  import { api } from "$lib/api.js";
   import { addTask, updateTask } from "$lib/stores/taskStore.js";
   import { users, fetchUsers, initUserSocket } from "$lib/stores/userStore.js";
-  import { onMount } from "svelte";
 
   export let project;
   export let task = null;
@@ -11,17 +12,17 @@
   let assigned_to = task?.assigned_to || "";
   let status = task?.status || "todo";
 
-  let searchQuery = "";   // Søgetekst for dropdown
+  let searchQuery = "";
   let loading = false;
   let error = "";
 
-  // Hent brugere og start socket
+  // Hent brugere + socket
   onMount(() => {
     fetchUsers();
     initUserSocket();
   });
 
-  // Filtrer brugere baseret på søgning
+  // Filtrer brugere
   $: filteredUsers = $users.filter(u =>
     !searchQuery.trim() ||
     u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -41,7 +42,6 @@
       return;
     }
 
-    // --- Tjek at brugeren findes i store (via WebSocket eller fetch)
     if (!$users.some(u => u.username === assigned_to)) {
       error = "Brugeren findes ikke i systemet.";
       return;
@@ -50,24 +50,33 @@
     loading = true;
 
     try {
-      let res;
       if (task) {
-        // Update eksisterende task
-        res = await fetch(`/api/tasks/${task.id}`, {
+        // 🔄 Update task
+        const data = await api(`/api/tasks/${task.id}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, description, assigned_to, status, project_id: project.id })
+          body: JSON.stringify({
+            title,
+            description,
+            assigned_to,
+            status,
+            project_id: project.id
+          })
         });
-        const data = await res.json();
+
         updateTask(data.task);
       } else {
-        // Opret ny task
-        res = await fetch("/api/tasks", {
+        // ➕ Create task
+        const data = await api("/api/tasks", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, description, assigned_to, status, project_id: project.id })
+          body: JSON.stringify({
+            title,
+            description,
+            assigned_to,
+            status,
+            project_id: project.id
+          })
         });
-        const data = await res.json();
+
         addTask(data.task);
 
         // Reset form
@@ -87,16 +96,26 @@
 </script>
 
 <form on:submit|preventDefault={handleSubmit}>
-  {#if error}<p style="color:red">{error}</p>{/if}
+  {#if error}
+    <p style="color:red">{error}</p>
+  {/if}
 
-  <input type="text" placeholder="Titel" bind:value={title} required />
-  <textarea placeholder="Beskrivelse" bind:value={description}></textarea>
+  <input
+    type="text"
+    placeholder="Titel"
+    bind:value={title}
+    required
+  />
 
-  <!-- Search input til user dropdown -->
-  <input 
-    type="text" 
-    placeholder="Søg efter bruger..." 
-    bind:value={searchQuery} 
+  <textarea
+    placeholder="Beskrivelse"
+    bind:value={description}
+  ></textarea>
+
+  <input
+    type="text"
+    placeholder="Søg efter bruger..."
+    bind:value={searchQuery}
   />
 
   <select bind:value={assigned_to}>
@@ -126,6 +145,7 @@
     margin-top: 0.2rem;
     margin-bottom: 0.5rem;
   }
+
   button {
     padding: 0.5rem 1rem;
     background-color: #222;
@@ -133,6 +153,7 @@
     border: none;
     cursor: pointer;
   }
+
   button:disabled {
     opacity: 0.6;
     cursor: not-allowed;

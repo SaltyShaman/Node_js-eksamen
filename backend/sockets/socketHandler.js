@@ -23,7 +23,6 @@ export default function socketHandler(io) {
         });
 
         // --- Live task updates ---
-// --- Live task updates ---
     socket.on("task updated", (updatedTask) => {
         io.emit("taskUpdated", updatedTask);   // ✔ samme navn som frontend
     });
