@@ -1,16 +1,35 @@
 <script>
   import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
   import UserList from "$lib/components/UserList.svelte";
   import UserForm from "$lib/components/UserForm.svelte";
-  import { fetchUsers, users, addUser, updateUser } from "$lib/stores/userStore.js";
+  import { fetchUsers, addUser, updateUser } from "$lib/stores/userStore.js";
   import { initUserSocket, clearUserListeners } from "$lib/stores/userStore.js";
+  import { api } from "$lib/api.js"; // brug din API hjælper
 
-  let currentUserRole = "ADMIN"; // Simuleret rolle
-  let editingUser = null;         // Brugeren der redigeres
+  let currentUserRole = null; // starter uden rolle
+  let editingUser = null;
+  let ready = false; // afventer API kald
 
   onMount(async () => {
-    await fetchUsers();
-    initUserSocket();
+    try {
+  
+      // 🔹 Rollebeskyttelse: STAFF må ikke se siden
+      if (currentUserRole === "STAFF") {
+        goto("/"); // send STAFF til forsiden
+        return;
+      }
+
+      // 🔹 Hent brugere fra API og init sockets
+      await fetchUsers();
+      initUserSocket();
+      ready = true;
+
+    } catch (err) {
+      console.error("Fejl ved hentning af brugerrolle:", err);
+      goto("/login"); // send ikke-loggede til login
+    }
+
     return () => clearUserListeners();
   });
 
@@ -29,18 +48,20 @@
   }
 </script>
 
-<h1>Brugere</h1>
+{#if ready}
+  <h1>Brugere</h1>
 
-<UserList {currentUserRole} on:editUser={(e) => handleEdit(e.detail)} />
+  <UserList {currentUserRole} on:editUser={(e) => handleEdit(e.detail)} />
 
-{#if currentUserRole === "ADMIN" || currentUserRole === "TEAM_LEADER"}
-  <h2>{editingUser ? "Rediger bruger" : "Opret ny bruger"}</h2>
-  <UserForm 
-    user={editingUser}
-    canEdit={currentUserRole === "ADMIN" || currentUserRole === "TEAM_LEADER"}
-    on:created={(e) => handleCreated(e.detail)}
-    on:updated={(e) => handleUpdated(e.detail)}
-  />
+  {#if currentUserRole === "ADMIN" || currentUserRole === "TEAM_LEADER"}
+    <h2>{editingUser ? "Rediger bruger" : "Opret ny bruger"}</h2>
+    <UserForm 
+      user={editingUser}
+      canEdit={currentUserRole === "ADMIN" || currentUserRole === "TEAM_LEADER"}
+      on:created={(e) => handleCreated(e.detail)}
+      on:updated={(e) => handleUpdated(e.detail)}
+    />
+  {/if}
 {/if}
 
 <style>

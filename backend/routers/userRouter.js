@@ -157,6 +157,12 @@ router.delete("/:id", requireLogin,  requireRole("ADMIN"), async (req, res) => {
 });
 
 
+//endpoint for checking role in the frontend
+router.get("/me", requireLogin, async (req, res) => {
+  const user = req.session.user;
+  if (!user) return res.status(401).json({ error: "Not logged in" });
+  res.json({ id: user.id, username: user.username, role: user.role });
+});
 
 
 export default router;
