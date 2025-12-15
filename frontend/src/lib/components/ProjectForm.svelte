@@ -2,7 +2,7 @@
   import { createEventDispatcher, onMount } from "svelte";
   import { api } from "$lib/api.js";
 
-  export let project = null; // Hvis null, new project
+  export let project = null; // If null, new project
 
   const dispatch = createEventDispatcher();
 
