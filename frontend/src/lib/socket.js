@@ -18,7 +18,6 @@ export function connectSocket() {
     });
 
     socket.on("connect", () => {
-        console.log("Connected to Socket.IO:", socket.id);
     });
 
     socket.on("disconnect", () => {

@@ -9,7 +9,7 @@ export const projects = writable([]);
 
 export async function fetchProjects() {
     try {
-        const data = await api("/api/projects"); // tilføj /api her
+        const data = await api("/api/projects"); 
         projects.set(data.projects || []);
     } catch (err) {
         console.error("Kunne ikke hente projekter:", err);

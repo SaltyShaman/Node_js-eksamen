@@ -5,7 +5,6 @@ export default function socketHandler(io) {
         if (session && session.user) {
             next();
         } else {
-            console.log("Unauthorized socket connection attempt");
             next(new Error("Not authenticated"));
         }
     });
@@ -31,7 +30,6 @@ export default function socketHandler(io) {
     });
 
     socket.on("disconnect", () => {
-            console.log("User disconnected:", username);
     });
     });
 }
