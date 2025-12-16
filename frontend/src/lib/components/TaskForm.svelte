@@ -140,5 +140,3 @@
     {task ? "Opdater Task" : "Opret Task"}
   </button>
 </form>
-
-
