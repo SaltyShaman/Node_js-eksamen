@@ -11,3 +11,20 @@
   margin-bottom: 1.5rem;
   background: #fff;
 }
+
+
+/* Rediger/Opdater knap */
+button.update {
+  background-color: #007BFF; /* Blå farve */
+  color: white;
+  border-radius: 4px;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+button.update:hover {
+  background-color: #0056b3; /* Mørkere blå ved hover */
+  transform: scale(1.05);
+}

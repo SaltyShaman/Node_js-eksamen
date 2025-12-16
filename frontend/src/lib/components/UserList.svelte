@@ -27,10 +27,8 @@
   {#each $users as u}
     <li>
       {u.username} ({u.role}) - {u.email}
-      {#if currentUserRole === "ADMIN"}
-        <button on:click={() => editUser(u)}>Rediger</button>
-        <button on:click={() => deleteUser(u.id)}>Slet</button>
-      {/if}
+      <button on:click={() => editUser(u)}>Rediger</button>
+      <button on:click={() => deleteUser(u.id)}>Slet</button>
     </li>
   {/each}
 </ul>

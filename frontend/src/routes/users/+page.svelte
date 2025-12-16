@@ -8,29 +8,18 @@
 
   import "./userspage.css"; 
 
-
-
-  let currentUserRole = null; // used to reset role and staff redirects
   let editingUser = null;
   let ready = false; // await API data 
 
   onMount(async () => {
     try {
-  
-      // 🔹Staff can't even see the formular
-      if (currentUserRole === "STAFF") {
-        goto("/"); //TO-DO next version: implement proper redirect
-        return;
-      }
-
-      // 🔹 Get users from API and start sockets
+      // 🔹 Hent alle brugere og start sockets
       await fetchUsers();
       initUserSocket();
       ready = true;
-
     } catch (err) {
-      console.error("Fejl ved hentning af brugerrolle:", err);
-      goto("/login"); // send to login if user is not logged in
+      console.error("Fejl ved hentning af brugere:", err);
+      goto("/login"); // send to login hvis ikke logget ind
     }
 
     return () => clearUserListeners();
@@ -54,17 +43,14 @@
 {#if ready}
   <h1>Brugere</h1>
 
-  <UserList {currentUserRole} on:editUser={(e) => handleEdit(e.detail)} />
+  <!-- Vis alle brugere -->
+  <UserList on:editUser={(e) => handleEdit(e.detail)} />
 
-  {#if currentUserRole === "ADMIN" || currentUserRole === "TEAM_LEADER"}
-    <h2>{editingUser ? "Rediger bruger" : "Opret ny bruger"}</h2>
-    <UserForm 
-      user={editingUser}
-      canEdit={currentUserRole === "ADMIN" || currentUserRole === "TEAM_LEADER"}
-      on:created={(e) => handleCreated(e.detail)}
-      on:updated={(e) => handleUpdated(e.detail)}
-    />
-  {/if}
+  <h2>{editingUser ? "Rediger bruger" : "Opret ny bruger"}</h2>
+  <UserForm 
+    user={editingUser}
+    canEdit={true} 
+    on:created={(e) => handleCreated(e.detail)}
+    on:updated={(e) => handleUpdated(e.detail)}
+  />
 {/if}
-
-
