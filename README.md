@@ -23,10 +23,16 @@ Eksamen/ (root folder)
 ├─ backend/
 │ ├─ .env
 │ ├─ app.js
-│ ├─ users.db (in gitignore)
+│ ├─ users.db
+│ ├─ database.sqlite
+│ ├─package-lock.json
+│ ├─package.json
 │ └─ routers/
 │ ├─ authRouter.js
-│ └─ middlewareRouter.js
+│ └─ projectRouter.js
+│ └─ protectedRouter.js
+│ └─ taskRouter.js
+│ └─ userRouter.js
 │ └─ config/
 │ ├─ rateLimiters.js
 │ ├─ sessionConfig.js
@@ -38,8 +44,9 @@ Eksamen/ (root folder)
 │ └─ middleware/
 │ ├─ requireLogin.js
 │ ├─ requireRole.js
-│ └─ middleware/
+│ └─ sockets/
 │ ├─ socketHandler.js
+│ ├─ socketIoInstance.js
 ├─ frontend/  (to-do)
 
 ```
