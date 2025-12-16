@@ -6,6 +6,10 @@
   import { fetchUsers, addUser, updateUser } from "$lib/stores/userStore.js";
   import { initUserSocket, clearUserListeners } from "$lib/stores/userStore.js";
 
+    import "./userspage.css"; 
+
+
+
   let currentUserRole = null; // used to reset role and staff redirects
   let editingUser = null;
   let ready = false; // await API data 
@@ -63,6 +67,4 @@
   {/if}
 {/if}
 
-<style>
-  h1, h2 { margin-bottom: 0.5rem; }
-</style>
+

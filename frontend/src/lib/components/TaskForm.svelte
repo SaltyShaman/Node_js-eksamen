@@ -4,6 +4,9 @@
   import { addTask, updateTask } from "$lib/stores/taskStore.js";
   import { users, fetchUsers, initUserSocket } from "$lib/stores/userStore.js";
 
+  import "./TaskForm.css";
+
+
   export let project;
   export let task = null;
 
@@ -138,24 +141,4 @@
   </button>
 </form>
 
-<style>
-  input, textarea, select {
-    width: 100%;
-    padding: 0.4rem;
-    margin-top: 0.2rem;
-    margin-bottom: 0.5rem;
-  }
 
-  button {
-    padding: 0.5rem 1rem;
-    background-color: #222;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-
-  button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-</style>

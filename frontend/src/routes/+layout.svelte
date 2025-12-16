@@ -3,6 +3,10 @@
     import Header from "$lib/Header.svelte";
     import Footer from "$lib/Footer.svelte";
 
+    import "./layout.css";
+
+
+
     loadSession(); // load upon app start
 </script>
 
@@ -18,9 +22,4 @@
 
 <Footer />
 
-<style>
-    main {
-        padding: 2rem;
-        min-height: 70vh;
-    }
-</style>
+

@@ -2,6 +2,8 @@
     import { api } from "$lib/api.js";
     import { goto } from "$app/navigation";
 
+    import "./projectcreatepage.css";
+
     let name = "";
     let description = "";
     let error = "";
@@ -57,28 +59,3 @@
     </button>
 </form>
 
-<style>
-    form {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        max-width: 500px;
-        margin: 2rem auto;
-    }
-
-    label {
-        font-weight: bold;
-    }
-
-    input, textarea {
-        width: 100%;
-        padding: 0.5rem;
-        font-size: 1rem;
-    }
-
-    button {
-        padding: 0.5rem 1rem;
-        font-size: 1rem;
-        cursor: pointer;
-    }
-</style>

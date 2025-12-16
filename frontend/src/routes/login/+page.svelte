@@ -2,6 +2,8 @@
     import { login, isAuthenticated, loadingSession, user } from "$lib/stores/sessionStore.js";
     import { onMount } from "svelte";
 
+    import "./login.css";
+
     let username = "";
     let password = "";
     let errorMessage = "";
@@ -58,19 +60,4 @@
     </form>
 </main>
 
-<style>
-    main {
-        max-width: 400px;
-        margin: 4rem auto;
-        padding: 2rem;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        text-align: center;
-    }
-    input {
-        width: 100%;
-        margin-bottom: 1rem;
-        padding: 0.5rem;
-    }
-</style>
 

@@ -17,7 +17,7 @@
         if ($user.role === "STAFF") {
             goto(`/tasks/staff/${$user.id}`);
         } else {
-            // For ADMIN/TEAM_LEADER: fx redirect til side med liste over alle staff
+            // For ADMIN/TEAM_LEADER: list of all staff tasks sorted by staff and project
             goto("/tasks/staff");
         }
     }

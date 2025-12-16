@@ -2,6 +2,8 @@
   import { createEventDispatcher, onMount } from "svelte";
   import { api } from "$lib/api.js";
 
+  import "./ProjectForm.css";
+  
   export let project = null; // If null, new project
 
   const dispatch = createEventDispatcher();
@@ -74,18 +76,4 @@
   </button>
 </form>
 
-<style>
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    max-width: 500px;
-  }
-  input, textarea {
-    width: 100%;
-    padding: 0.5rem;
-  }
-  button {
-    padding: 0.5rem 1rem;
-  }
-</style>
+
