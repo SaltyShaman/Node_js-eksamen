@@ -6,7 +6,7 @@
   import { fetchUsers, addUser, updateUser } from "$lib/stores/userStore.js";
   import { initUserSocket, clearUserListeners } from "$lib/stores/userStore.js";
 
-    import "./userspage.css"; 
+  import "./userspage.css"; 
 
 
 
