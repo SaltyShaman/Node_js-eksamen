@@ -22,16 +22,14 @@
   let searchQuery = "";
   let taskError = "";
 
-  // 🔍 Søgning på projekter + tasks
+  
   $: filteredProjects = $projects.filter(project => {
     if (!searchQuery.trim()) return true;
 
     const q = searchQuery.toLowerCase();
 
-    // Match på projektnavn
     if (project.name.toLowerCase().includes(q)) return true;
 
-    // Match på tasks der hører til projektet
     return $tasks.some(
       task =>
         task.project_id === project.id &&

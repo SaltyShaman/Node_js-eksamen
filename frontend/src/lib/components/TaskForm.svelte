@@ -6,7 +6,6 @@
 
   import "./TaskForm.css";
 
-
   export let project;
   export let task = null;
 
@@ -15,22 +14,14 @@
   let assigned_to = task?.assigned_to || "";
   let status = task?.status || "todo";
 
-  let searchQuery = "";
   let loading = false;
   let error = "";
 
-  // get uers and sockets
+  // Hent brugere og init socket
   onMount(() => {
     fetchUsers();
     initUserSocket();
   });
-
-  // Filtering for searching
-  $: filteredUsers = $users.filter(u =>
-    !searchQuery.trim() ||
-    u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.role.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   async function handleSubmit() {
     error = "";
@@ -54,7 +45,6 @@
 
     try {
       if (task) {
-        // 🔄 Update task
         const data = await api(`/api/tasks/${task.id}`, {
           method: "PUT",
           body: JSON.stringify({
@@ -65,10 +55,8 @@
             project_id: project.id
           })
         });
-
         updateTask(data.task);
       } else {
-        // ➕ Create task
         const data = await api("/api/tasks", {
           method: "POST",
           body: JSON.stringify({
@@ -79,15 +67,12 @@
             project_id: project.id
           })
         });
-
         addTask(data.task);
 
-        // Reset form
         title = "";
         description = "";
         assigned_to = "";
         status = "todo";
-        searchQuery = "";
       }
     } catch (err) {
       console.error(err);
@@ -115,15 +100,9 @@
     bind:value={description}
   ></textarea>
 
-  <input
-    type="text"
-    placeholder="Søg efter bruger..."
-    bind:value={searchQuery}
-  />
-
   <select bind:value={assigned_to}>
     <option value="">Vælg bruger</option>
-    {#each filteredUsers as user}
+    {#each $users as user}
       <option value={user.username}>
         {user.username} ({user.role})
       </option>
