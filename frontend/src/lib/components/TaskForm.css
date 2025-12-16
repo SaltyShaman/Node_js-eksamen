@@ -1,19 +1,86 @@
-  input, textarea, select {
-    width: 100%;
-    padding: 0.4rem;
-    margin-top: 0.2rem;
-    margin-bottom: 0.5rem;
-  }
+/* Inputs, textarea og select */
+input, textarea, select {
+  width: 100%;
+  padding: 0.4rem;
+  margin-top: 0.2rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
 
-  button {
-    padding: 0.5rem 1rem;
-    background-color: #222;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
+/* Generel knap styling */
+button {
+  padding: 0.5rem 1rem;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
 
-  button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
+/* Disabled state */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Rediger/Opdater knap */
+button.update {
+  background-color: #007BFF; /* Blå farve */
+  color: white;
+}
+
+button.update:hover {
+  background-color: #0056b3; /* Mørkere blå ved hover */
+  transform: scale(1.05);
+}
+
+/* Slet knap */
+button.danger {
+  background-color: #f44336;
+  color: white;
+}
+button.danger:hover {
+  background-color: #da190b;
+  transform: scale(1.05);
+}
+
+/* Task-delete knap */
+.task-delete button {
+  background-color: #ff6b6b; /* Lysere rød */
+  color: white;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.85rem;
+  border-radius: 4px;
+}
+.task-delete button:hover {
+  background-color: #ff4c4c;
+  transform: scale(1.05);
+}
+
+/* Actions container til spacing */
+.project-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.task-actions {
+  display: flex;
+  flex-direction: column; /* Stabel TaskForm og Slet Task vertikalt */
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+}
+
+
+/* Sørg for TaskForm ikke fylder hele bredden */
+.task-actions > :first-child {
+  flex: 1 1 70%; /* TaskForm fylder max 70% */
+  min-width: 200px; /* Mindstebredde */
+}
+
+/* Task-delete container */
+.task-delete {
+  align-self: flex-start; /* Sætter knappen til venstre */
+}

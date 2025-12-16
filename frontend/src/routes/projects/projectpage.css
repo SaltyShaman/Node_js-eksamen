@@ -1,0 +1,13 @@
+.page-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.project-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  background: #fff;
+}

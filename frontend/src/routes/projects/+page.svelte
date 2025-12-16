@@ -77,58 +77,58 @@
   });
 </script>
 
-<h1 class="page-title">Alle Projekter</h1>
+<div class="page-wrapper">
 
-<input
-  class="search-input"
-  type="text"
-  placeholder="Søg efter projekt eller task…"
-  bind:value={searchQuery}
-/>
+  <h1 class="page-title">Alle Projekter</h1>
 
-{#if $projects.length === 0}
-  <p>Ingen projekter endnu.</p>
-{:else}
-  {#each filteredProjects as project}
-    <div class="project-card">
-      <h2>{project.name}</h2>
-      <p>{project.description}</p>
+  <input
+    class="search-input"
+    type="text"
+    placeholder="Søg efter projekt eller task…"
+    bind:value={searchQuery}
+  />
 
-      <div class="project-actions">
-        <button on:click={() => handleEdit(project.id)}>Rediger Projekt</button>
-        <button class="danger" on:click={() => handleDelete(project.id)}>
-          Slet Projekt
-        </button>
-      </div>
+  {#if $projects.length === 0}
+    <p>Ingen projekter endnu.</p>
+  {:else}
+    {#each filteredProjects as project}
+      <div class="project-card">
+        <h2>{project.name}</h2>
+        <p>{project.description}</p>
 
-      <h3>Tasks:</h3>
-      {#if taskError}
-        <p class="error">{taskError}</p>
+        <div class="project-actions">
+          <button class="update" on:click={() => handleEdit(project.id)}>Rediger Projekt</button>
+          <button class="danger" on:click={() => handleDelete(project.id)}>Slet Projekt</button>
+        </div>
+
+        <h3>Tasks:</h3>
+        {#if taskError}
+          <p class="error">{taskError}</p>
+        {/if}
+
+<ul class="task-list">
+  {#each $tasks.filter(t => t.project_id === project.id) as task (task.id)}
+    <li class="task-item">
+      <strong>{task.title}</strong> – {task.status}
+      {#if task.assigned_to}
+        (Assigned to: {task.assigned_to})
       {/if}
 
-      <ul class="task-list">
-        {#each $tasks.filter(t => t.project_id === project.id) as task (task.id)}
-          <li class="task-item">
-            <strong>{task.title}</strong> – {task.status}
-            {#if task.assigned_to}
-              (Assigned to: {task.assigned_to})
-            {/if}
-
-            <div class="task-actions">
-              <TaskForm {project} task={task} />
-              <button
-                class="danger small"
-                on:click={() => handleTaskDeleted(project.id, task.id)}
-              >
-                Slet Task
-              </button>
-            </div>
-          </li>
-        {/each}
-      </ul>
-
-      <h4>Opret ny Task</h4>
-      <TaskForm {project} />
+  <div class="task-actions">
+    <TaskForm {project} task={task} />
+   <div class="task-delete">
+      <button on:click={() => handleTaskDeleted(project.id, task.id)}>
+        Slet Task
+      </button>
     </div>
+  </div>
+    </li>
   {/each}
-{/if}
+</ul>
+
+        <h4>Opret ny Task</h4>
+        <TaskForm {project} />
+      </div>
+    {/each}
+  {/if}
+</div>
