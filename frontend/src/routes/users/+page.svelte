@@ -19,7 +19,7 @@
   
       // 🔹Staff can't even see the formular
       if (currentUserRole === "STAFF") {
-        goto("/"); // redirect staff
+        goto("/"); //TO-DO next version: implement proper redirect
         return;
       }
 
