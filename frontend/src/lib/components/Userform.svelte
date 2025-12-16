@@ -5,6 +5,9 @@
   export let user = null;        // null = create new users
   export let canEdit = false;    // ADMIN/TEAM_LEADER restricted
 
+  import "./UserForm.css";
+
+
   const dispatch = createEventDispatcher();
 
   let username = user?.username || "";
