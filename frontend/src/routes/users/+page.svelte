@@ -9,17 +9,17 @@
   import "./userspage.css"; 
 
   let editingUser = null;
-  let ready = false; // await API data 
+  let ready = false; 
 
   onMount(async () => {
     try {
-      // 🔹 Hent alle brugere og start sockets
+      
       await fetchUsers();
       initUserSocket();
       ready = true;
     } catch (err) {
       console.error("Fejl ved hentning af brugere:", err);
-      goto("/login"); // send to login hvis ikke logget ind
+      goto("/login"); 
     }
 
     return () => clearUserListeners();
@@ -43,7 +43,6 @@
 {#if ready}
   <h1>Brugere</h1>
 
-  <!-- Vis alle brugere -->
   <UserList on:editUser={(e) => handleEdit(e.detail)} />
 
   <h2>{editingUser ? "Rediger bruger" : "Opret ny bruger"}</h2>

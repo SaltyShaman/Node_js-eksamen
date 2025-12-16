@@ -5,7 +5,8 @@ export const user = writable(null);
 export const isAuthenticated = writable(false);
 export const loadingSession = writable(true);
 
-//old function (can probably be deleted)
+
+
 export async function loadSession() {
 
     try {
