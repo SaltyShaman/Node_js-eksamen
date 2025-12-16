@@ -1,13 +1,70 @@
-    main {
-        max-width: 400px;
-        margin: 4rem auto;
-        padding: 2rem;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        text-align: center;
-    }
-    input {
-        width: 100%;
-        margin-bottom: 1rem;
-        padding: 0.5rem;
-    }
+/* Center main container */
+main {
+    max-width: 400px;
+    margin: 4rem auto;
+    padding: 2.5rem 2rem;
+    border-radius: 10px;
+    text-align: center;
+    background: #f9f9f9;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Form elements */
+form div {
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+input {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+input:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
+}
+
+/* Button styling */
+button {
+    width: 100%;
+    padding: 0.7rem;
+    background-color: #4a90e2;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #357ab7;
+}
+
+/* Error message */
+p {
+    color: #e74c3c;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+/* Page title */
+h1 {
+    margin-bottom: 2rem;
+    color: #333;
+}
