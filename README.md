@@ -7,15 +7,14 @@ Topic: Small project management system prototype.
 
 ## Packages used in the backend:
 
-express
-sqlite3
-sqlite
-bcrypt
-helmet
-dotenv
-cors
-sockets.io
-express-sessions
+1) express
+2) sqlite3
+3) sqlite
+4) bcrypt
+5) helmet
+6) dotenv
+7) cors
+8) sockets.io
 
 ## Project structure:
 
@@ -148,3 +147,4 @@ You can acces the page used to host the users without being logged in.
 4) a self service part for the user entity
 5) implement proper role restriction.
 6) turn the project page into a general overview with redirects for edits.
+7) Refactor sockets and server into a new file. Let the backend app.js be a HTTP related file
